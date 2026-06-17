@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WRO Robot - Camera</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; padding: 20px; }
+        h1 { color: #e94560; font-size: 1.4rem; margin-bottom: 16px; text-align: center; }
+        .main { display: flex; gap: 20px; align-items: flex-start; max-width: 1600px; margin: 0 auto; }
+        .stream { flex: 3; min-width: 0; }
+        .stream img { width: 100%; border-radius: 8px; border: 2px solid #333; background: #000; display: block; }
+        .tuner { flex: 2; min-width: 320px; max-height: 90vh; overflow-y: auto; padding-right: 4px; }
+        .tuner::-webkit-scrollbar { width: 6px; }
+        .tuner::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        .slider-group { display: grid; gap: 4px; }
+        .slider-row { display: flex; align-items: center; gap: 6px; }
+        .slider-row label { min-width: 28px; font-size: 0.75rem; color: #aaa; }
+        .slider-row input[type=range] { flex: 1; accent-color: #e94560; height: 4px; }
+        .slider-row .val { min-width: 28px; text-align: right; font-size: 0.75rem; font-family: monospace; color: #f5a623; }
+        .color-group { background: #16213e; border-radius: 6px; padding: 8px 12px; margin-bottom: 6px; }
+        .color-header { font-weight: 600; margin-bottom: 4px; font-size: 0.85rem; }
+        .color-header .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+        .btn-save { width: 100%; padding: 10px; background: #e94560; color: #fff; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 8px; }
+        .btn-save:hover { background: #d63851; }
+        .status { text-align: center; margin-top: 6px; font-size: 0.75rem; color: #aaa; }
+    </style>
+</head>
+<body>
+    <h1>&#9670; WRO Robot &mdash; Live Feed</h1>
+    <div class="main">
+        <div class="stream">
+            <img src="/video_feed" alt="Camera Stream">
+        </div>
+        <div class="tuner">
+            <div id="sliders"></div>
+            <button class="btn-save" onclick="saveHSV()">Save HSV Values</button>
+            <div class="status" id="status">Ready</div>
+        </div>
+    </div>
+
+<script>
+const COLORS = ['red','green','blue','orange','white'];
+const COLOR_LABELS = { red:'Red', green:'Green', blue:'Blue', orange:'Orange', white:'White' };
+const COLOR_DOTS = { red:'#ff4444', green:'#44ff44', blue:'#4488ff', orange:'#ff8800', white:'#ffffff' };
+const channels = [
+  { key:'low', label:'L' },
+  { key:'high', label:'H' }
+];
+
+let currentHSV = {};
+
+async function loadHSV() {
+  const r = await fetch('/api/hsv');
+  const raw = await r.json();
+  currentHSV = {};
+  const ch = ['H','S','V'];
+  const colors = ['red','green','blue','orange','white'];
+  for (const color of colors) {
+    const lower = raw[color + '_lower'];
+    const upper = raw[color + '_upper'];
+    if (lower) {
+      currentHSV[color + '_H_low'] = lower[0];
+      currentHSV[color + '_S_low'] = lower[1];
+      currentHSV[color + '_V_low'] = lower[2];
+    }
+    if (upper) {
+      currentHSV[color + '_H_high'] = upper[0];
+      currentHSV[color + '_S_high'] = upper[1];
+      currentHSV[color + '_V_high'] = upper[2];
+    }
+  }
+  renderSliders();
+}
+
+function renderSliders() {
+  const container = document.getElementById('sliders');
+  container.innerHTML = '';
+  for (const color of COLORS) {
+    const div = document.createElement('div');
+    div.className = 'color-group';
+    const header = document.createElement('div');
+    header.className = 'color-header';
+    header.innerHTML = `<span class="dot" style="background:${COLOR_DOTS[color]}"></span>${COLOR_LABELS[color]}`;
+    div.appendChild(header);
+    const group = document.createElement('div');
+    group.className = 'slider-group';
+    const ranges = ['H','S','V'];
+    for (const ch of ranges) {
+      for (const bound of channels) {
+        const row = document.createElement('div');
+        row.className = 'slider-row';
+        const key = `${color}_${ch}_${bound.key}`;
+        const val = currentHSV[key] ?? (bound.key === 'low' ? 0 : 255);
+        row.innerHTML = `
+          <label>${ch} ${bound.label}</label>
+          <input type="range" min="0" max="255" value="${val}" data-key="${key}">
+          <span class="val" id="v-${key}">${val}</span>
+        `;
+        const inp = row.querySelector('input');
+        inp.addEventListener('input', () => {
+          const v = parseInt(inp.value);
+          document.getElementById(`v-${key}`).textContent = v;
+        });
+        group.appendChild(row);
+      }
+    }
+    div.appendChild(group);
+    container.appendChild(div);
+  }
+}
+
+async function saveHSV() {
+  const sliders = {};
+  document.querySelectorAll('#sliders input[type=range]').forEach(inp => {
+    sliders[inp.dataset.key] = parseInt(inp.value);
+  });
+  const data = {};
+  const ch = ['H','S','V'];
+  const colors = ['red','green','blue','orange','white'];
+  for (const color of colors) {
+    data[color + '_lower'] = [sliders[color + '_H_low'] || 0, sliders[color + '_S_low'] || 0, sliders[color + '_V_low'] || 0];
+    data[color + '_upper'] = [sliders[color + '_H_high'] || 255, sliders[color + '_S_high'] || 255, sliders[color + '_V_high'] || 255];
+  }
+  const r = await fetch('/api/hsv', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  const result = await r.json();
+  document.getElementById('status').textContent = 'Saved: ' + (result.message || 'OK');
+}
+
+loadHSV();
+</script>
+</body>
+</html>
