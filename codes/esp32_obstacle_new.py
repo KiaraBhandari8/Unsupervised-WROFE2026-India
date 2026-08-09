@@ -1,0 +1,940 @@
+import cv2
+import sys
+import numpy as np
+from picamera2 import Picamera2
+import libcamera
+from flask import Flask, render_template, Response
+import threading
+import time
+import os
+import serial
+import signal  # Native signal event tracking utility
+
+# --- IMPORT CUSTOM VISION AND LIDAR EXTENSIONS ---
+try: 
+    from image_frame_combine_outer_inner_depth import process_frame_for_steering
+    from lidar_steering_new import LidarScanner, PIDController, calculate_steering_error, get_wall_parallel_error, get_wall_parallel_sector_stats, PARALLEL_TOLERANCE_MM
+except ImportError as e:
+    print(f"[SYSTEM ERROR] Failed to mount local tracking components: {e}")
+    sys.exit(1)
+
+# --- GLOBAL SHUTDOWN SYSTEM TRACKERS ---
+global_shutdown_event = threading.Event()  # Master termination trigger event flag
+esp_ser = None                              # Global handle for ESP32 serial link
+lidar_scanner = None                        # Global handle for LiDAR object
+picam2 = None                               # Global handle for camera driver
+
+# --- LIDAR CONTROL DESIGN PARAMETERS ---
+LIDAR_TARGET_DISTANCE_MM = 500
+LIDAR_SAFETY_DISTANCE_MM = 200  # Front trigger distance line (20 cm)
+WALL_LOSS_THRESHOLD_MM = 350.0  # Open pocket validation limit to ignore missing walls
+CLOCKWISE_WALL_FOLLOWING = True  # Dynamically modified tracking direction flag
+WALL_FOLLOW_TARGET_MM = 600
+# Configurations for the close-range side panic600 state
+LIDAR_RIGHT_SIDE_DISTANCE_MM = 180  # 18cm side distance panic limit
+LIDAR_LEFT_SIDE_DISTANCE_MM = 180   # 18cm side distance panic limit
+LIDAR_SIDE_STEER_MAGNITUDE = 15     # Fixed steering shift magnitude away from side walls
+
+# Hardware Servo Limits
+LIDAR_SERVO_MIN_ANGLE = 10
+LIDAR_SERVO_MAX_ANGLE = 170
+
+# --- OBSTACLE SIGHT THRESHOLD BOUNDARIES ---
+FRONT_TURN_TRIGGER_MM = 200.0  # Strict 20cm front trigger boundary
+FRONT_SCAN_ANGLE_DEG = 15      # Width of front scan cone (+/- 15°)
+
+# --- GLOBAL BUFFER LOCKS AND REGISTERS ---
+output_frame = None
+output_frame_lock = threading.Lock()
+
+latest_lidar_data = {}
+lidar_data_lock = threading.Lock()
+latest_tof_distance_mm = None
+tof_data_lock = threading.Lock()
+tof_sensor = None
+
+latest_processed_frames = {}
+camera_frame_lock = threading.Lock()
+camera_thread_stop_event = threading.Event()
+
+app = Flask(__name__)
+
+# --- RUNTIME ACTUATION PARAMETERS ---
+PI_TO_ESP_PORT = "/dev/ttyAMA0"
+BAUD_RATE_ESP = 115200
+
+# --- CONTROL DESIGN CONSTANTS (8-BIT EXECUTION LAYER) ---
+SERVO_CENTER_ANGLE = 100       # Absolute mechanical steering straight alignment midpoint
+# ROBOT_SPEED = 120            # Baseline track speed variable lookup configuration
+ROBOT_CRUISE_SPEED = 180      # Operational forward driving speed sent to ESP32 (0-255)
+ROBOT_MANEUVER_SPEED = 155    # Slowdown velocity used across complex evasion arcs
+
+# --- NEW: INDEPENDENT VISION CALIBRATION PARAMETERS ---
+STEERING_GAIN_GREEN = 0.1     # Baseline multiplier that keeps Green working perfectly
+STEERING_GAIN_RED = 0.14      # INCREASE THIS to make the steering more aggressive for Red
+RED_CLEARANCE_OFFSET = 8      # Static angular nudge (in degrees) to push the chassis wider right
+
+# Gyro Turning Constants
+TURN_TARGET_DEGREES = 80.0    # Braking trigger value to counteract kinetic momentum slip
+CORNER_DETECTION_COOLDOWN_SEC = 10
+CORNER_APPROACH_BRAKE_DISTANCE_MM = 450.0
+CORNER_PIVOT_SPEED = 140
+CORNER_PIVOT_SAFETY_TIMEOUT = 2.5
+CORNER_BACKWARD_DURATION = 4
+CORNER_BACKWARD_TOF_TARGET_MM = 50.0
+CORNER_BACKWARD_TOF_TOLERANCE_MM = 10.0
+CORNER_BRAKE_DELAY = 0.25
+CORNER_CHECK_LOG_EVERY_N_FRAMES = 10
+
+# --- ARC-REVERSE CORNER PARAMETERS (RIGHT turn, wide-left case only) ---
+LEFT_DISTANCE_ARC_THRESHOLD_MM = 400.0   # if avg_left > this at RIGHT-turn detection, use reverse arc instead of in-place pivot
+CORNER_ARC_TRIGGER_FRONT_MM = 280.0      # tighter approach trigger distance for the arc case
+CORNER_ARC_STEER_OFFSET = 60             # degrees off-center while reversing (toward SERVO_HARD_LEFT side) - bench-tune
+CORNER_ARC_PIVOT_SPEED = 120             # reverse speed magnitude during the arc
+CORNER_ARC_PIVOT_SAFETY_TIMEOUT = 4.0    # arcs cover more ground per degree than in-place pivots, give more time
+
+TURN_TARGET_RIGHT_DEGREES = 80.0
+TURN_TARGET_LEFT_DEGREES = 80.0
+SERVO_HARD_RIGHT = 180
+SERVO_HARD_LEFT = 0
+WALL_ALIGN_CREEP_SPEED = 140
+WALL_ALIGN_SAFETY_TIMEOUT = 3.0
+WALL_ALIGN_NO_WALL_TIMEOUT = 1.0
+
+# --- CAMERA CONFIGURATION MATRIX ---
+CAMERA_RESOLUTION = (2304, 1296)
+CAMERA_FRAMERATE = 30.0
+CAMERA_BUFFER_COUNT = 4
+PROCESSING_WIDTH = CAMERA_RESOLUTION[0] // 2
+PROCESSING_HEIGHT = CAMERA_RESOLUTION[1] // 2
+HSV_PROCESSING_WIDTH = CAMERA_RESOLUTION[0] // 3   
+HSV_PROCESSING_HEIGHT = CAMERA_RESOLUTION[1] // 3  
+
+# --- DEBUG MATRIX CONFIGURATION ---
+STREAM_VIDEO = True
+DEBUG_UI_OVERLAYS = True
+
+# --- ROBOT LOGIC STATES ---
+class RobotState:
+    INITIALIZING = "INITIALIZING"
+    PURE_GYRO_START = "PURE_GYRO_START"
+    LIDAR_WALL_FOLLOWING = "LIDAR_WALL_FOLLOWING"
+    VISION_OBSTACLE_AVOIDANCE = "VISION_OBSTACLE_AVOIDANCE"
+    LIDAR_SIDE_AVOIDANCE = "LIDAR_SIDE_AVOIDANCE"
+    LAP_TERMINATION = "LAP_TERMINATION"
+    STOP = "STOP"
+    WALL_ALIGN_CORRECTION = "WALL_ALIGN_CORRECTION"
+    CORNER_APPROACH_WALL = "CORNER_APPROACH_WALL"
+    CORNER_ACTIVE_PIVOT = "CORNER_ACTIVE_PIVOT"
+
+    CORNER_ARC_ACTIVE_PIVOT = "CORNER_ARC_ACTIVE_PIVOT"
+
+    CORNER_ALIGN_BACKWARD = "CORNER_ALIGN_BACKWARD"
+    CORNER_POST_PIVOT_ALIGN = "CORNER_POST_PIVOT_ALIGN"
+current_robot_state = RobotState.INITIALIZING
+current_yaw = 0.0
+
+# --- PACKET SYSTEM TRANSMISSION WRAPPERS ---
+def send_esp_packet(ser_port, steering, speed):
+    """Encapsulates control variables into standard serial strings safely."""
+    if ser_port and ser_port.is_open and not global_shutdown_event.is_set():
+        try:
+            packet = f"STR:{steering},SPD:{speed}\n"
+            ser_port.write(packet.encode('utf-8'))
+        except Exception:
+            pass
+
+# ====================================================
+# CRITICAL SIGNAL INTERCEPT HANDLER (Graceful Braking)
+# ====================================================
+def emergency_shutdown_handler(signum, frame):
+    """Intercepts terminal signals immediately to safely kill mechanical movement."""
+    print("\n\n[EMERGENCY BRAKE] Shutdown signal captured! Halting hardware registers...")
+    global_shutdown_event.set()
+    camera_thread_stop_event.set()
+    
+    global esp_ser, lidar_scanner, picam2
+    
+    if esp_ser and esp_ser.is_open:
+        try:
+            for _ in range(3):
+                esp_ser.write(f"STR:{SERVO_CENTER_ANGLE},SPD:0\n".encode('utf-8'))
+                esp_ser.flush()
+                time.sleep(0.03)
+            esp_ser.close()
+            print("[CLEANUP] Safety stop dispatched. Serial interface closed securely.")
+        except Exception as e:
+            print(f"[CLEANUP ERROR] Failed to flush serial stop command: {e}")
+            
+    if lidar_scanner:
+        try:
+            lidar_scanner.disconnect()
+            print("[CLEANUP] LiDAR scanner safely disconnected.")
+        except Exception as e:
+            print(f"[CLEANUP ERROR] Failed to kill lidar spin: {e}")
+            
+    if picam2:
+        try:
+            picam2.stop()
+            print("[CLEANUP] Picamera2 resource array unmounted.")
+        except:
+            pass
+            
+    print("[SUCCESS] All mechanical systems isolated. Exiting clean.\n")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, emergency_shutdown_handler)   # Intercepts Ctrl+C
+signal.signal(signal.SIGQUIT, emergency_shutdown_handler)  # Intercepts Ctrl+\
+
+# --- COLOR PROCESSING MASKS ---
+def filter_blue_objects(hsv_frame):
+    lower_blue = np.array([80, 110, 50])
+    upper_blue = np.array([130, 255, 255])
+    mask = cv2.inRange(hsv_frame, lower_blue, upper_blue)
+    kernel = np.ones((5, 5), np.uint8)
+    mask = cv2.erode(mask, kernel, iterations=2)
+    return cv2.dilate(mask, kernel, iterations=2)
+
+def detect_color_binary(mask, threshold=4000):
+    return cv2.countNonZero(mask) > threshold
+
+def get_compensated_front_distance(scan_data, current_yaw):
+    """Dynamically shifts the scanning cone window and applies cosine projection math."""
+    if not scan_data:
+        return 2000.0
+
+    yaw_offset = int(round(current_yaw))
+    dynamic_angles = range(-FRONT_SCAN_ANGLE_DEG + yaw_offset, FRONT_SCAN_ANGLE_DEG + yaw_offset + 1)
+
+    compensated_points = []
+    yaw_rad = np.radians(current_yaw)
+
+    for a in dynamic_angles:
+        if a in scan_data and scan_data[a] > 0:
+            raw_distance = scan_data[a]
+            true_distance = raw_distance * np.cos(yaw_rad)
+            compensated_points.append(true_distance)
+
+    if not compensated_points:
+        return 2000.0
+
+    return sum(compensated_points) / len(compensated_points)
+
+# --- LIDAR DATA ACQUISITION BACKGROUND TASK ---
+def lidar_acquisition_thread_func(scanner_instance):
+    global latest_lidar_data, lidar_data_lock
+    print("[SYSTEM] LiDAR background ingestion thread active.")
+    try:
+        while not global_shutdown_event.is_set():
+            data = scanner_instance.get_scan_data()
+            if data:
+                with lidar_data_lock:
+                    latest_lidar_data = data.copy()
+            time.sleep(0.01)
+    except Exception as e:
+        if not global_shutdown_event.is_set():
+            print(f"[CRITICAL] LiDAR thread collapsed: {e}")
+# --- TOF DATA ACQUISITION BACKGROUND TASK ---
+def tof_acquisition_thread_func(sensor_instance):
+    global latest_tof_distance_mm, tof_data_lock
+    print("[SYSTEM] ToF background ingestion thread active.")
+    tof_log_counter = 0
+    while not global_shutdown_event.is_set():
+        try:
+            dist = sensor_instance.range
+            with tof_data_lock:
+                latest_tof_distance_mm = dist
+            if tof_log_counter % 20 == 0:
+                print(f"[TOF RAW] range={dist}mm")
+        except Exception as e:
+            with tof_data_lock:
+                latest_tof_distance_mm = None
+            if tof_log_counter % 20 == 0:
+                print(f"[TOF RAW] read failed: {e}")
+        tof_log_counter += 1
+        time.sleep(0.03)
+
+# --- CAMERA ACQUISITION BACKGROUND TASK ---
+def camera_acquisition_thread_func(picam2_instance, stop_event, processing_size, hsv_processing_size):
+    global latest_processed_frames, camera_frame_lock
+    print("[SYSTEM] Camera thread active. Processing dual-resize frame array.")
+    try:
+        while not stop_event.is_set() and not global_shutdown_event.is_set():
+            captured_frame_rgb = picam2_instance.capture_array()
+            
+            processing_frame_rgb = cv2.resize(captured_frame_rgb, processing_size, interpolation=cv2.INTER_AREA)
+            frame_bgr = cv2.cvtColor(processing_frame_rgb, cv2.COLOR_RGB2BGR)
+            
+            hsv_source_frame = cv2.resize(captured_frame_rgb, hsv_processing_size, interpolation=cv2.INTER_AREA)
+            hsv_frame = cv2.cvtColor(hsv_source_frame, cv2.COLOR_RGB2HSV)
+            
+            with camera_frame_lock:
+                latest_processed_frames['rgb'] = processing_frame_rgb
+                latest_processed_frames['bgr'] = frame_bgr
+                latest_processed_frames['hsv'] = hsv_frame
+    except Exception as e:
+        if not global_shutdown_event.is_set():
+            print(f"[CRITICAL] Camera acquisition thread crashed: {e}")
+
+# --- MAIN ROBOT NAVIGATION EXECUTION ENGINE ---
+def robot_control_loop():
+    global output_frame, output_frame_lock, current_robot_state, latest_processed_frames, camera_frame_lock
+    global CLOCKWISE_WALL_FOLLOWING, current_yaw, esp_ser, lidar_scanner, picam2
+
+    # Initialize Hardware Serial Bus Connection
+    try:
+        esp_ser = serial.Serial(PI_TO_ESP_PORT, BAUD_RATE_ESP, timeout=0.05)
+        print("[INFO] High-speed serial connection established with ESP32 execution layer.")
+    except Exception as e:
+        print(f"[FATAL] Serial bridge initialization failed on {PI_TO_ESP_PORT}: {e}")
+        sys.exit(1)
+
+    # Initialize Camera Pipelines
+    picam2 = Picamera2()
+    camera_config = picam2.create_preview_configuration(
+        main={"size": CAMERA_RESOLUTION},
+        transform=libcamera.Transform(vflip=False, hflip=False),
+        controls={"FrameRate": CAMERA_FRAMERATE},
+        buffer_count=CAMERA_BUFFER_COUNT
+    )
+    picam2.configure(camera_config)
+    picam2.start()
+    time.sleep(1) 
+
+    processing_size = (PROCESSING_WIDTH, PROCESSING_HEIGHT)
+    hsv_processing_size = (HSV_PROCESSING_WIDTH, HSV_PROCESSING_HEIGHT)
+
+    camera_thread = threading.Thread(
+        target=camera_acquisition_thread_func,
+        args=(picam2, camera_thread_stop_event, processing_size, hsv_processing_size)
+    )
+    camera_thread.daemon = True
+    camera_thread.start()
+
+    # Initialize LiDAR Sensors
+    try:
+        lidar_scanner = LidarScanner(port='/dev/ttyUSB0', baudrate=230400)
+        lidar_scanner.connect()
+        lidar_acquisition_thread = threading.Thread(target=lidar_acquisition_thread_func, args=(lidar_scanner,))
+        lidar_acquisition_thread.daemon = True
+        lidar_acquisition_thread.start()
+        print("[INFO] LiDAR scanner pipeline mounted safely.")
+    except Exception as e:
+        print(f"[WARN] LiDAR interface offline: {e}. Switching to vision fallback maps.")
+        lidar_scanner = None
+    # Initialize Rear ToF Distance Sensor
+    global tof_sensor
+    try:
+        import board
+        import busio
+        import adafruit_vl53l0x
+        i2c_tof = busio.I2C(board.SCL, board.SDA)
+        tof_sensor = adafruit_vl53l0x.VL53L0X(i2c_tof)
+        tof_thread = threading.Thread(target=tof_acquisition_thread_func, args=(tof_sensor,))
+        tof_thread.daemon = True
+        tof_thread.start()
+        print("[INFO] Rear ToF sensor pipeline mounted safely.")
+    except Exception as e:
+        print(f"[WARN] ToF sensor offline: {e}. Backward phase will rely on timeout only.")
+        tof_sensor = None
+
+    # Initialize Controller Mathematics Loops
+    gyro_straight_pid = PIDController(Kp=2.2, Ki=0.002, Kd=0.15, setpoint=0)
+    wall_follow_pid = PIDController(Kp=0.35, Ki=0.001, Kd=0.04, setpoint=0)
+    alignment_pid = PIDController(Kp=0.22, Ki=0.0, Kd=0.08, setpoint=0)  # Placeholder gains; bench-tune with live creep/error logs before unattended use.
+
+    # Set Initial Behavioral States
+    current_robot_state = RobotState.PURE_GYRO_START
+    turn_count = 0
+    baseline_start_yaw = 0.0
+    turn_direction = None
+    use_reverse_arc = False
+    pivot_phase_start_time = 0.0
+    backward_phase_start_time = 0.0
+    corner_cooldown_end_time = 0.0
+    corner_check_frame_counter = 0
+    align_phase_start_time = 0.0
+    align_return_state = None
+    was_avoiding_obstacle = False
+    align_no_wall_start_time = 0.0
+    post_pivot_align_start_time = 0.0
+    post_pivot_align_no_wall_start_time = 0.0
+    
+    # Blue Line Crossing Telemetry Registers
+    blue_count = 0
+    prev_blue_state = False
+    blue_cooldown_end_time = 0.0
+    
+    print(f"[SYSTEM] Calibration complete. Initial State: {current_robot_state}")
+
+    try:
+        while not global_shutdown_event.is_set():
+            loop_start_time = time.monotonic()
+
+            while esp_ser.in_waiting > 0:
+                try:
+                    raw_line = esp_ser.readline().decode('utf-8', errors='ignore').strip()
+                    if raw_line.startswith("YAW:"):
+                        current_yaw = float(raw_line.split(":")[1])
+                except Exception:
+                    pass
+
+            with camera_frame_lock:
+                if not latest_processed_frames:
+                    time.sleep(0.01)
+                    continue
+                frame_bgr = latest_processed_frames['bgr'].copy()
+                hsv = latest_processed_frames['hsv'].copy()
+
+            processed_frame = frame_bgr.copy()
+
+            scan_data = {}
+            if lidar_scanner:
+                with lidar_data_lock:
+                    scan_data = latest_lidar_data.copy()
+
+            avg_front_baseline = get_compensated_front_distance(scan_data, current_yaw)
+
+            left_pts = [scan_data[a] for a in range(-90, -39) if a in scan_data and scan_data[a] > 0]
+            right_pts = [scan_data[a] for a in range(40, 91) if a in scan_data and scan_data[a] > 0]
+            avg_left = sum(left_pts) / len(left_pts) if left_pts else 2000.0
+            avg_right = sum(right_pts) / len(right_pts) if right_pts else 2000.0
+            in_cooldown = time.monotonic() < corner_cooldown_end_time
+
+            if scan_data and corner_check_frame_counter % CORNER_CHECK_LOG_EVERY_N_FRAMES == 0:
+                cooldown_note = f" | COOLDOWN ({corner_cooldown_end_time - time.monotonic():.1f}s left)" if in_cooldown else ""
+                print(f"[{current_robot_state}] [CORNER CHECK] Front: {avg_front_baseline:.1f}mm | Left: {avg_left:.1f}mm | Right: {avg_right:.1f}mm | Yaw: {current_yaw:+.1f}°{cooldown_note}")
+
+            corner_check_frame_counter += 1
+
+            current_timestamp = time.time()
+            blue_mask = filter_blue_objects(hsv)
+            blue_in_view = detect_color_binary(blue_mask, threshold=4000)
+
+            if not blue_in_view and prev_blue_state:
+                if current_timestamp > blue_cooldown_end_time:
+                    blue_count += 1
+                    print(f"[RACE telemet] Blue line passed! Total lines crossed: {blue_count}/12")
+                    blue_cooldown_end_time = current_timestamp + 5.0
+            prev_blue_state = blue_in_view
+
+            # ====================================================
+            # PRIORITY LEVEL 0: LAP TERMINATION OVERRIDE
+            # ====================================================
+            if current_robot_state == RobotState.LAP_TERMINATION or turn_count >= 12:
+                current_robot_state = RobotState.LAP_TERMINATION
+                print("\n==========================================================")
+                print(f"[MATCH COMPLETE] 12 Race Turns Logged! Locking wheels to finish...")
+                print("==========================================================")
+                send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, ROBOT_CRUISE_SPEED)
+                time.sleep(4.0)
+                
+                send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, 0)
+                print("[SYSTEM] Hard race shutdown executed successfully.")
+                break
+
+            # ====================================================
+            # PRIORITY LEVEL 1: ACTIVE CORNERING RUNTIME EXECUTION
+            # ====================================================
+            if current_robot_state in [RobotState.CORNER_APPROACH_WALL, RobotState.CORNER_ACTIVE_PIVOT, RobotState.CORNER_ARC_ACTIVE_PIVOT, RobotState.CORNER_POST_PIVOT_ALIGN, RobotState.CORNER_ALIGN_BACKWARD]:
+
+                if current_robot_state == RobotState.CORNER_APPROACH_WALL:
+                    approach_trigger_distance = CORNER_ARC_TRIGGER_FRONT_MM if use_reverse_arc else CORNER_APPROACH_BRAKE_DISTANCE_MM
+                    display_text = f"[CORNER] Phase 2: Approach | Front: {avg_front_baseline:.0f}mm"
+                    print(f"[{current_robot_state}] [CORNER EXECUTION] Phase 2: Approaching wall | Front: {avg_front_baseline:.1f}mm / {approach_trigger_distance:.1f}mm | Yaw: {current_yaw:+.1f}° | ArcMode: {use_reverse_arc}")
+
+                    if avg_front_baseline < approach_trigger_distance:
+                        print(f"[{current_robot_state}] [CORNER EXECUTION] Approach limit reached. Applying hard brake...")
+                        send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, 0)
+                        time.sleep(CORNER_BRAKE_DELAY)
+
+                        print(f"[{current_robot_state}] [CORNER EXECUTION] Resetting gyro registers before turn...")
+                        esp_ser.write(b"RST_YAW\n")
+                        esp_ser.flush()
+                        time.sleep(0.1)
+
+                        pivot_phase_start_time = time.monotonic()
+                        baseline_start_yaw = current_yaw
+
+                        if use_reverse_arc:
+                            arc_steer_angle = SERVO_CENTER_ANGLE - CORNER_ARC_STEER_OFFSET
+                            print(f"[{current_robot_state}] [CORNER EXECUTION] Entering reverse arc pivot: steer={arc_steer_angle}° speed=-{CORNER_ARC_PIVOT_SPEED}")
+                            current_robot_state = RobotState.CORNER_ARC_ACTIVE_PIVOT
+                            send_esp_packet(esp_ser, arc_steer_angle, -CORNER_ARC_PIVOT_SPEED)
+                        else:
+                            final_servo = SERVO_HARD_RIGHT if turn_direction == "RIGHT" else SERVO_HARD_LEFT
+                            print(f"[{current_robot_state}] [CORNER EXECUTION] Locking wheels to extreme pivot angle: {final_servo}°")
+                            send_esp_packet(esp_ser, final_servo, 0)
+                            time.sleep(0.15)
+                            current_robot_state = RobotState.CORNER_ACTIVE_PIVOT
+                            send_esp_packet(esp_ser, final_servo, CORNER_PIVOT_SPEED)
+                    else:
+                        send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, ROBOT_CRUISE_SPEED)
+
+                elif current_robot_state == RobotState.CORNER_ACTIVE_PIVOT:
+                    elapsed_pivot = time.monotonic() - pivot_phase_start_time
+                    yaw_delta_signed = current_yaw - baseline_start_yaw
+
+                    if turn_direction == "RIGHT":
+                        target_degrees = TURN_TARGET_RIGHT_DEGREES
+                        pivot_complete = yaw_delta_signed <= -TURN_TARGET_RIGHT_DEGREES
+                    else:
+                        target_degrees = TURN_TARGET_LEFT_DEGREES
+                        pivot_complete = yaw_delta_signed >= TURN_TARGET_LEFT_DEGREES
+
+                    display_text = f"[CORNER] Phase 3: Gyro Pivot | Yaw: {yaw_delta_signed:+.1f}° / target {target_degrees}° ({turn_direction})"
+                    pivot_timed_out = elapsed_pivot >= CORNER_PIVOT_SAFETY_TIMEOUT
+
+                    if pivot_complete or pivot_timed_out:
+                        if pivot_timed_out and not pivot_complete:
+                            print(f"[{current_robot_state}] [CORNER EXECUTION] WARNING: Pivot safety timeout hit before target yaw reached (only {yaw_delta_signed:+.1f}° / target {target_degrees}°). Yaw: {current_yaw:+.1f}°. Check gyro data.")
+                        print(f"[{current_robot_state}] [CORNER EXECUTION] Pivot complete ({yaw_delta_signed:+.1f}°). Current Yaw: {current_yaw:+.1f}°. Hard braking chassis...")
+                        send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, 0)
+                        time.sleep(CORNER_BRAKE_DELAY)
+
+                        print(f"[{current_robot_state}] [CORNER EXECUTION] Resetting chassis orientation before backup...")
+                        esp_ser.write(b"RST_YAW\n")
+                        esp_ser.flush()
+                        time.sleep(0.1)
+                        current_yaw = 0.0
+
+                        print(f"[{current_robot_state}] [CORNER EXECUTION] Wheels centered. Actuating Reverse Profile...")
+                        print(f"[{current_robot_state}] [CORNER EXECUTION] Wheels centered. Entering post-pivot parallel alignment...")
+                        post_pivot_align_start_time = time.monotonic()
+                        post_pivot_align_no_wall_start_time = 0.0
+                        current_robot_state = RobotState.CORNER_POST_PIVOT_ALIGN
+                        send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, 0)
+                    else:
+                        final_servo = SERVO_HARD_RIGHT if turn_direction == "RIGHT" else SERVO_HARD_LEFT
+                        send_esp_packet(esp_ser, final_servo, CORNER_PIVOT_SPEED)
+                elif current_robot_state == RobotState.CORNER_ARC_ACTIVE_PIVOT:
+                    elapsed_arc = time.monotonic() - pivot_phase_start_time
+                    yaw_delta_signed = current_yaw - baseline_start_yaw
+                    arc_complete = yaw_delta_signed <= -TURN_TARGET_RIGHT_DEGREES
+                    arc_timed_out = elapsed_arc >= CORNER_ARC_PIVOT_SAFETY_TIMEOUT
+
+                    with tof_data_lock:
+                        rear_distance = latest_tof_distance_mm
+                    rear_tof_hit = (
+                        rear_distance is not None
+                        and rear_distance <= (CORNER_BACKWARD_TOF_TARGET_MM + CORNER_BACKWARD_TOF_TOLERANCE_MM)
+                    )
+
+                    display_text = f"[CORNER] Arc Reverse Pivot | Yaw: {yaw_delta_signed:+.1f}° / target -{TURN_TARGET_RIGHT_DEGREES}° | Rear: {rear_distance if rear_distance is not None else float('nan'):.0f}mm"
+                    print(f"[{current_robot_state}] [ARC PIVOT] Yaw: {yaw_delta_signed:+.1f}° | Rear: {rear_distance} | Elapsed: {elapsed_arc:.2f}s")
+
+                    if arc_complete or arc_timed_out or rear_tof_hit:
+                        if arc_timed_out and not arc_complete:
+                            print(f"[{current_robot_state}] [ARC PIVOT] WARNING: Arc safety timeout hit before target yaw reached (only {yaw_delta_signed:+.1f}°). Check gyro data.")
+                        if rear_tof_hit:
+                            print(f"[{current_robot_state}] [ARC PIVOT] Rear ToF limit reached ({rear_distance:.0f}mm) before yaw target. Stopping arc early to avoid rear collision.")
+                        print(f"[{current_robot_state}] [ARC PIVOT] Arc complete ({yaw_delta_signed:+.1f}°). Hard braking chassis...")
+                        send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, 0)
+                        time.sleep(CORNER_BRAKE_DELAY)
+
+                        print(f"[{current_robot_state}] [ARC PIVOT] Resetting chassis orientation before post-pivot align...")
+                        esp_ser.write(b"RST_YAW\n")
+                        esp_ser.flush()
+                        time.sleep(0.1)
+                        current_yaw = 0.0
+
+                        post_pivot_align_start_time = time.monotonic()
+                        post_pivot_align_no_wall_start_time = 0.0
+                        current_robot_state = RobotState.CORNER_POST_PIVOT_ALIGN
+                        send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, 0)
+                    else:
+                        arc_steer_angle = SERVO_CENTER_ANGLE - CORNER_ARC_STEER_OFFSET
+                        send_esp_packet(esp_ser, arc_steer_angle, -CORNER_ARC_PIVOT_SPEED)        
+                elif current_robot_state == RobotState.CORNER_POST_PIVOT_ALIGN:
+                    align_side = "left" if CLOCKWISE_WALL_FOLLOWING else "right"
+                    front_avg, rear_avg, front_count, rear_count = get_wall_parallel_sector_stats(scan_data, align_side)
+                    parallel_error = get_wall_parallel_error(scan_data, align_side)
+                    elapsed_post_pivot_align = time.monotonic() - post_pivot_align_start_time
+
+                    if parallel_error is None:
+                        if post_pivot_align_no_wall_start_time == 0.0:
+                            post_pivot_align_no_wall_start_time = time.monotonic()
+                        no_wall_elapsed = time.monotonic() - post_pivot_align_no_wall_start_time
+                    else:
+                        post_pivot_align_no_wall_start_time = 0.0
+                        no_wall_elapsed = 0.0
+
+                    is_aligned = parallel_error is not None and abs(parallel_error) < PARALLEL_TOLERANCE_MM
+                    hard_timeout = elapsed_post_pivot_align >= WALL_ALIGN_SAFETY_TIMEOUT
+                    no_wall_timeout = parallel_error is None and no_wall_elapsed >= WALL_ALIGN_NO_WALL_TIMEOUT
+
+                    display_text = (
+                        f"[CORNER] Phase 3.5: Post-Pivot Align | Side: {align_side.title()} | Err: {parallel_error:.1f}mm"
+                        if parallel_error is not None else
+                        f"[CORNER] Phase 3.5: Post-Pivot Align | Side: {align_side.title()} | Err: N/A"
+                    )
+
+                    print(
+                        f"[{current_robot_state}] [POST-PIVOT ALIGN] Side: {align_side} | Front: {front_avg if front_avg is not None else float('nan'):.1f}mm | "
+                        f"Rear: {rear_avg if rear_avg is not None else float('nan'):.1f}mm | Err: {parallel_error if parallel_error is not None else float('nan'):.1f}mm | "
+                        f"FrontPts: {front_count} | RearPts: {rear_count} | Elapsed: {elapsed_post_pivot_align:.2f}s"
+                    )
+
+                    if is_aligned or hard_timeout or no_wall_timeout:
+                        reason = "aligned" if is_aligned else "timeout" if hard_timeout else "no_wall"
+                        print(f"[{current_robot_state}] [POST-PIVOT ALIGN] Exit condition reached ({reason}). Starting backward phase.")
+                        send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, 0)
+                        time.sleep(CORNER_BRAKE_DELAY)
+                        alignment_pid.reset()
+                        backward_phase_start_time = time.monotonic()
+                        current_robot_state = RobotState.CORNER_ALIGN_BACKWARD
+                        send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, -ROBOT_MANEUVER_SPEED)
+                    else:
+                        if parallel_error is None:
+                            send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, -WALL_ALIGN_CREEP_SPEED)
+                        else:
+                            normalized_error = parallel_error if align_side == "left" else -parallel_error
+                            pid_output = -alignment_pid.update(normalized_error)
+                            target_servo_angle = SERVO_CENTER_ANGLE - pid_output
+                            final_servo_angle = int(round(np.clip(target_servo_angle, SERVO_CENTER_ANGLE - 20, SERVO_CENTER_ANGLE + 20)))
+                            send_esp_packet(esp_ser, final_servo_angle, -WALL_ALIGN_CREEP_SPEED)
+                elif current_robot_state == RobotState.CORNER_ALIGN_BACKWARD:
+                    elapsed_back = time.monotonic() - backward_phase_start_time
+
+                    with tof_data_lock:
+                        rear_distance = latest_tof_distance_mm
+
+                    tof_reached = (
+                        rear_distance is not None
+                        and rear_distance <= (CORNER_BACKWARD_TOF_TARGET_MM + CORNER_BACKWARD_TOF_TOLERANCE_MM)
+                    )
+                    hard_timeout_backward = elapsed_back >= CORNER_BACKWARD_DURATION
+
+                    display_text = (
+                        f"[CORNER] Phase 4: Backing Away | Rear: {rear_distance:.0f}mm / {CORNER_BACKWARD_TOF_TARGET_MM:.0f}mm"
+                        if rear_distance is not None else
+                        f"[CORNER] Phase 4: Backing Away | Rear: N/A | {elapsed_back:.1f}s / {CORNER_BACKWARD_DURATION}s"
+                    )
+                    print(f"[{current_robot_state}] [CORNER EXECUTION] Phase 4: Reversing | Rear: {rear_distance} | Elapsed: {elapsed_back:.2f}s | Yaw: {current_yaw:+.1f}°")
+
+                    if tof_reached or hard_timeout_backward:
+                        if hard_timeout_backward and not tof_reached:
+                            print(f"[{current_robot_state}] [CORNER EXECUTION] WARNING: Backward safety timeout hit before ToF target reached (rear={rear_distance}). Check ToF sensor.")
+                        else:
+                            print(f"[{current_robot_state}] [CORNER EXECUTION] ToF target reached (rear={rear_distance:.0f}mm). Hard braking applied.")
+                        send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, 0)
+                        time.sleep(0.3)
+
+                        print(f"[{current_robot_state}] [CORNER EXECUTION] Cleaning up spatial registers before resuming wall-follow...")
+                        esp_ser.write(b"RST_YAW\n")
+                        esp_ser.flush()
+                        time.sleep(0.1)
+                        current_yaw = 0.0
+
+                        turn_count += 1
+                        gyro_straight_pid.reset()
+                        wall_follow_pid.reset()
+                        alignment_pid.reset()
+                        corner_cooldown_end_time = time.monotonic() + CORNER_DETECTION_COOLDOWN_SEC
+
+                        align_return_state = RobotState.LIDAR_WALL_FOLLOWING
+                        align_phase_start_time = time.monotonic()
+                        align_no_wall_start_time = 0.0
+                        current_robot_state = RobotState.WALL_ALIGN_CORRECTION
+                        turn_direction = None
+                    else:
+                        send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, -ROBOT_MANEUVER_SPEED)
+
+                if DEBUG_UI_OVERLAYS:
+                    loop_duration = time.monotonic() - loop_start_time
+                    fps = 1.0 / loop_duration if loop_duration > 0 else 0
+                    cv2.putText(processed_frame, display_text, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                    cv2.putText(processed_frame, f"State: {current_robot_state} | Turns: {turn_count}", (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+                    cv2.putText(processed_frame, f"Lines Logged: {blue_count}/12 | FPS: {int(fps)}", (20, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+                    if STREAM_VIDEO:
+                        with output_frame_lock:
+                            output_frame = processed_frame.copy()
+
+                time.sleep(0.02)
+                continue
+
+            # ====================================================
+            # PRIORITY LEVEL 2: POST-MANEUVER WALL ALIGNMENT
+            # ====================================================
+            if current_robot_state == RobotState.WALL_ALIGN_CORRECTION:
+                align_side = "left" if CLOCKWISE_WALL_FOLLOWING else "right"
+                front_avg, rear_avg, front_count, rear_count = get_wall_parallel_sector_stats(scan_data, align_side)
+                parallel_error = get_wall_parallel_error(scan_data, align_side)
+                elapsed_align = time.monotonic() - align_phase_start_time
+
+                if parallel_error is None:
+                    if align_no_wall_start_time == 0.0:
+                        align_no_wall_start_time = time.monotonic()
+                    no_wall_elapsed = time.monotonic() - align_no_wall_start_time
+                else:
+                    align_no_wall_start_time = 0.0
+                    no_wall_elapsed = 0.0
+
+                is_aligned = parallel_error is not None and abs(parallel_error) < PARALLEL_TOLERANCE_MM
+                hard_timeout = elapsed_align >= WALL_ALIGN_SAFETY_TIMEOUT
+                no_wall_timeout = parallel_error is None and no_wall_elapsed >= WALL_ALIGN_NO_WALL_TIMEOUT
+
+                display_text = (
+                    f"MODE: Wall Align | Side: {align_side.title()} | Err: {parallel_error:.1f}mm"
+                    if parallel_error is not None else
+                    f"MODE: Wall Align | Side: {align_side.title()} | Err: N/A"
+                )
+
+                print(
+                    f"[{current_robot_state}] [WALL ALIGN] Side: {align_side} | Front: {front_avg if front_avg is not None else float('nan'):.1f}mm | "
+                    f"Rear: {rear_avg if rear_avg is not None else float('nan'):.1f}mm | Err: {parallel_error if parallel_error is not None else float('nan'):.1f}mm | "
+                    f"FrontPts: {front_count} | RearPts: {rear_count} | Elapsed: {elapsed_align:.2f}s"
+                )
+
+                if is_aligned or hard_timeout or no_wall_timeout:
+                    reason = "aligned" if is_aligned else "timeout" if hard_timeout else "no_wall"
+                    print(f"[{current_robot_state}] [WALL ALIGN] Exit condition reached ({reason}). Braking and returning to {align_return_state}.")
+                    send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, 0)
+                    alignment_pid.reset()
+                    current_robot_state = align_return_state or RobotState.PURE_GYRO_START
+                    align_return_state = None
+                    align_phase_start_time = 0.0
+                    align_no_wall_start_time = 0.0
+                    continue
+
+                if parallel_error is None:
+                    send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, WALL_ALIGN_CREEP_SPEED)
+                else:
+                    normalized_error = parallel_error if align_side == "left" else -parallel_error
+                    pid_output = alignment_pid.update(normalized_error)
+                    target_servo_angle = SERVO_CENTER_ANGLE - pid_output
+                    final_servo_angle = int(round(np.clip(target_servo_angle, SERVO_CENTER_ANGLE - 20, SERVO_CENTER_ANGLE + 20)))
+                    send_esp_packet(esp_ser, final_servo_angle, WALL_ALIGN_CREEP_SPEED)
+
+                if DEBUG_UI_OVERLAYS:
+                    loop_duration = time.monotonic() - loop_start_time
+                    fps = 1.0 / loop_duration if loop_duration > 0 else 0
+                    cv2.putText(processed_frame, display_text, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                    cv2.putText(processed_frame, f"State: {current_robot_state} | Align Side: {align_side}", (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+                    cv2.putText(processed_frame, f"FrontPts: {front_count} RearPts: {rear_count} | FPS: {int(fps)}", (20, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+                    if STREAM_VIDEO:
+                        with output_frame_lock:
+                            output_frame = processed_frame.copy()
+
+                time.sleep(0.02)
+                continue
+
+            # ====================================================
+            # PRIORITY LEVEL 2: RADAR FRONTAL TRIPWIRE CHECK
+            # ====================================================
+            is_corner_signature = False
+            if (not in_cooldown
+                and avg_front_baseline <= 700.0
+                and ((avg_left < 950.0 and avg_right > 1600.0)
+                     or (avg_right < 900.0 and avg_left > 1800.0))):
+                is_corner_signature = True
+
+            if is_corner_signature:
+                print(f"\n[CORNER INTERSECTION] Front Wall at: {avg_front_baseline:.1f}mm. Stopping chassis... (signature)")
+                send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, 0)
+                time.sleep(1.0)
+
+                if avg_left < avg_right:
+                    turn_direction = "RIGHT"
+                    use_reverse_arc = avg_left > LEFT_DISTANCE_ARC_THRESHOLD_MM
+                    if use_reverse_arc:
+                        print(f"[CORNER SIGNATURE] Wide-left clearance ({avg_left:.0f}mm > {LEFT_DISTANCE_ARC_THRESHOLD_MM:.0f}mm) on RIGHT turn -> using reverse arc pivot.")
+                    if turn_count == 0:
+                        CLOCKWISE_WALL_FOLLOWING = True
+                        print("[LAYOUT LOCKDOWN] Track direction set to: CLOCKWISE (CW)")
+                else:
+                    turn_direction = "LEFT"
+                    use_reverse_arc = False
+                    if turn_count == 0:
+                        CLOCKWISE_WALL_FOLLOWING = False
+                        print("[LAYOUT LOCKDOWN] Track direction set to: COUNTER-CLOCKWISE (CCW)")
+                
+                print(f"[PRE-TURN ACTUATION] Entering corner approach toward {turn_direction} turn...")
+                print("[ACTION] Flushing scrub vibration error -> Resetting Gyro Yaw to 0°...")
+                esp_ser.write(b"RST_YAW\n")
+                esp_ser.flush()
+                time.sleep(0.1)
+                
+                current_yaw = 0.0
+                baseline_start_yaw = 0.0
+                current_robot_state = RobotState.CORNER_APPROACH_WALL
+                
+                send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, ROBOT_CRUISE_SPEED)
+                continue
+
+            # ====================================================
+            # PRIORITY LEVEL 3: PROXIMITY CRITICAL WALL OVERRIDES
+            # ====================================================
+            side_alert = calculate_steering_error(scan_data, LIDAR_TARGET_DISTANCE_MM, safety_distance_mm=150, clockwise=CLOCKWISE_WALL_FOLLOWING)
+            right_side_panic = [scan_data[a] for a in range(40, 76) if a in scan_data and 0 < scan_data[a] < LIDAR_RIGHT_SIDE_DISTANCE_MM]
+            left_side_panic = [scan_data[a] for a in range(-75, -39) if a in scan_data and 0 < scan_data[a] < LIDAR_LEFT_SIDE_DISTANCE_MM]
+
+            if right_side_panic:
+                current_robot_state = RobotState.LIDAR_SIDE_AVOIDANCE
+                target_servo_angle = SERVO_CENTER_ANGLE - LIDAR_SIDE_STEER_MAGNITUDE
+                robot_speed_current = ROBOT_MANEUVER_SPEED
+                display_text = "MODE: OVERRIDE | Right Wall Close"
+            elif left_side_panic:
+                current_robot_state = RobotState.LIDAR_SIDE_AVOIDANCE
+                target_servo_angle = SERVO_CENTER_ANGLE + LIDAR_SIDE_STEER_MAGNITUDE
+                robot_speed_current = ROBOT_MANEUVER_SPEED
+                display_text = "MODE: OVERRIDE | Left Wall Close"
+
+            # ====================================================
+            # PRIORITY LEVEL 4: COMPUTER VISION PILLAR AVOIDANCE
+            # ====================================================
+            else:
+                is_near_field_mode = avg_front_baseline < 1100.0
+                processed_frame, vision_angle, _, logic_label, _ = process_frame_for_steering(
+                    frame_bgr, use_outer_roi_and_bottom_point=is_near_field_mode
+                )
+                vision_angle = -1 * vision_angle
+
+                if logic_label in ["red_obstacle", "obstacle"]:
+                    was_avoiding_obstacle = True
+                    current_robot_state = RobotState.VISION_OBSTACLE_AVOIDANCE
+                    robot_speed_current = ROBOT_MANEUVER_SPEED
+                    
+                    # MODIFICATION: Split Red vs Green processing blocks to handle asymmetric steering weights
+                    if logic_label == "red_obstacle":
+                        servo_adjust = -vision_angle * STEERING_GAIN_RED
+                        # Apply the steering scale along with a positive clearance bias to widen right-hand arcs
+                        target_servo_angle = SERVO_CENTER_ANGLE - servo_adjust + RED_CLEARANCE_OFFSET
+                        display_text = f"MODE: Red Avoid | Steer: {int(target_servo_angle)}°"
+                    else:
+                        # Standard Green avoidance loop handles left-hand transitions cleanly
+                        servo_adjust = -vision_angle * STEERING_GAIN_GREEN
+                        target_servo_angle = SERVO_CENTER_ANGLE - servo_adjust
+                        display_text = f"MODE: Green Avoid | Steer: {int(target_servo_angle)}°"
+                
+                # ====================================================
+                # PRIORITY LEVEL 5: TRACK DRIVING NAVIGATION (DEFAULT RUN)
+                # ====================================================
+                else:
+                    if was_avoiding_obstacle:
+                        was_avoiding_obstacle = False
+                        if turn_count >= 1 and CLOCKWISE_WALL_FOLLOWING is not None:
+                            align_return_state = RobotState.LIDAR_WALL_FOLLOWING
+                        else:
+                            align_return_state = RobotState.PURE_GYRO_START
+
+                        alignment_pid.reset()
+                        align_phase_start_time = time.monotonic()
+                        align_no_wall_start_time = 0.0
+                        current_robot_state = RobotState.WALL_ALIGN_CORRECTION
+                        send_esp_packet(esp_ser, SERVO_CENTER_ANGLE, 0)
+                        display_text = "MODE: Post-Obstacle Wall Align"
+                        continue
+
+                    robot_speed_current = ROBOT_CRUISE_SPEED
+                    
+                    if turn_count >= 1 and CLOCKWISE_WALL_FOLLOWING is not None:
+                        current_robot_state = RobotState.LIDAR_WALL_FOLLOWING
+                        if CLOCKWISE_WALL_FOLLOWING:
+                            left_follow_pts = [scan_data[a] for a in range(-90, -39) if a in scan_data and scan_data[a] > 0]
+                            if left_follow_pts:
+                                avg_left_wall = sum(left_follow_pts) / len(left_follow_pts)
+                                if avg_left_wall > WALL_LOSS_THRESHOLD_MM:
+                                    heading_error = 0.0 - current_yaw
+                                    pid_output = gyro_straight_pid.update(heading_error)
+                                    target_servo_angle = SERVO_CENTER_ANGLE - pid_output
+                                    display_text = "MODE: Wall Lost Fallback (Gyro Straight)"
+                                else:
+                                    wall_error = avg_left_wall - WALL_FOLLOW_TARGET_MM
+                                    pid_output = wall_follow_pid.update(wall_error)
+                                    target_servo_angle = SERVO_CENTER_ANGLE - pid_output
+                                    display_text = f"MODE: Follow Outer Left | Err: {wall_error:.0f}mm"
+                            else:
+                                heading_error = 0.0 - current_yaw
+                                pid_output = gyro_straight_pid.update(heading_error)
+                                target_servo_angle = SERVO_CENTER_ANGLE - pid_output
+                        else:
+                            right_follow_pts = [scan_data[a] for a in range(40, 91) if a in scan_data and scan_data[a] > 0]
+                            if right_follow_pts:
+                                avg_right_wall = sum(right_follow_pts) / len(right_follow_pts)
+                                if avg_right_wall > WALL_LOSS_THRESHOLD_MM:
+                                    heading_error = 0.0 - current_yaw
+                                    pid_output = gyro_straight_pid.update(heading_error)
+                                    target_servo_angle = SERVO_CENTER_ANGLE - pid_output
+                                    display_text = "MODE: Wall Lost Fallback (Gyro Straight)"
+                                else:
+                                    wall_error = WALL_FOLLOW_TARGET_MM - avg_right_wall
+                                    pid_output = wall_follow_pid.update(wall_error)
+                                    target_servo_angle = SERVO_CENTER_ANGLE - pid_output
+                                    display_text = f"MODE: Follow Outer Right | Err: {wall_error:.0f}mm"
+                            else:
+                                heading_error = 0.0 - current_yaw
+                                pid_output = gyro_straight_pid.update(heading_error)
+                                target_servo_angle = SERVO_CENTER_ANGLE - pid_output
+                    else:
+                        current_robot_state = RobotState.PURE_GYRO_START
+                        heading_error = 0.0 - current_yaw
+                        pid_output = gyro_straight_pid.update(heading_error)
+                        target_servo_angle = SERVO_CENTER_ANGLE - pid_output
+                        display_text = f"MODE: Start Gyro Straight | Yaw: {current_yaw:.1f}°"
+
+            # 5. Output packets to hardware layers
+            final_servo_angle = int(round(np.clip(target_servo_angle, SERVO_CENTER_ANGLE - 20, SERVO_CENTER_ANGLE + 20)))
+            send_esp_packet(esp_ser, final_servo_angle, robot_speed_current)
+
+            # Frame serving calculations
+            loop_duration = time.monotonic() - loop_start_time
+            fps = 1.0 / loop_duration if loop_duration > 0 else 0
+
+            if DEBUG_UI_OVERLAYS:
+                cv2.putText(processed_frame, display_text, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                cv2.putText(processed_frame, f"State: {current_robot_state} | Turns: {turn_count}", (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+                cv2.putText(processed_frame, f"Lines Logged: {blue_count}/12 | FPS: {int(fps)}", (20, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                
+                if STREAM_VIDEO:
+                    with output_frame_lock:
+                        output_frame = processed_frame.copy()
+
+            time.sleep(0.02)
+
+    except Exception as e:
+        print(f"[SYSTEM FAILURE] Main runtime error tripped: {e}")
+    finally:
+        emergency_shutdown_handler(None, None)
+
+# --- FLASK JPEGMOTION WEB SERVER PIPELINES ---
+def generate_frames():
+    global output_frame, output_frame_lock
+    while not global_shutdown_event.is_set():
+        if not STREAM_VIDEO:
+            time.sleep(0.2)
+            continue
+            
+        local_frame = None
+        with output_frame_lock:
+            if output_frame is not None:
+                local_frame = output_frame.copy()
+        
+        if local_frame is None:
+            time.sleep(0.03)
+            continue
+            
+        flag, encoded_image = cv2.imencode(".jpg", local_frame)
+        if not flag:
+            continue
+            
+        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded_image) + b'\r\n')
+        time.sleep(0.03)
+
+@app.route("/")
+def index():
+    return "<h3>WRO 2026 Live Camera Server Active</h3><img src='/video_feed' width='100%'/>"
+
+@app.route("/video_feed")
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+if __name__ == '__main__':
+    print("--- Booting WRO 2026 Unified Obstacle Round System ---")
+    control_thread = threading.Thread(target=robot_control_loop)
+    control_thread.daemon = True
+    control_thread.start()
+
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True, use_reloader=False)
