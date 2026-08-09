@@ -38,3 +38,17 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
 | Shubh Gupta    | Grade 10 @ Chatrabhuj Narsee School    | Team Member |
 | Dhanak Seth    | Grade 8 @ Vibgyor High School          | Team Member |
 | Vinay Ummadi   | Mentor @ MakerWorks Lab                | Team Mentor |
+
+## About the Challenge
+
+The World Robot Olympiad (WRO) is an international robotics competition that encourages students to develop problem-solving, programming, and engineering skills. The Future Engineers category is designed for students aged 14–22 years and focuses on autonomous driving. The challenge simulates real-world traffic conditions and requires teams to design and program a fully autonomous robot car.
+
+The challenge requires students to construct an autonomous robot which will undergo 2 rounds. First, an open round challenge where the robot would need to complete 3 rounds around the arena within the time limit of 3 minutes (180 seconds). The second round, which is the obstacle round consists of navigating through red and green pillars, where the robot would move from the left of the green pillar and from right of the red pillar. The robot should once again, not exceed a time limit of 3 minutes.
+
+## List of Components
+
+| Name of Component | Quantity |
+| ---- | ---- |
+| Raspberry Pi 5 (Cooling Fan + SD Card) | 1 |
+| Pi Camera Module 3 Wide Angle | 1 |
+| ESP 32 | 1 |
