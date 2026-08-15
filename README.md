@@ -156,9 +156,23 @@ The navigation system determines an escape direction based on the available spac
 
 ### 5) Arbitration: Choosing the Action
 
-The navigation system combines information from the camera, LiDAR, and IMU to determine the robot's next action.
+The navigation system uses a priority-based arbitration system to determine which behaviour should control the robot at any given moment. Higher-priority behaviours override lower-priority behaviours when multiple conditions are detected simultaneously.
 
-The resulting command contains the required steering angle and motor speed. The Raspberry Pi sends this command to the ESP32, which controls the steering servo and motors.
+The behaviour hierarchy is:
+
+**Imminent collision avoidance**: Highest priority. If a collision is detected as imminent by the LiDAR, the robot immediately performs an escape manoeuvre.
+
+**Corner turning**: A committed corner-turning manoeuvre takes priority over normal obstacle avoidance and wall following. It is interrupted only by an imminent collision.
+
+**Side obstacle avoidance**: LiDAR side-proximity warnings override camera-based pillar avoidance when the robot is too close to a side wall.
+
+**Camera obstacle avoidance**: Red and green obstacles detected using computer vision generate a steering response.
+
+**LiDAR wall following**: When no higher-priority behaviour is active, the robot follows the wall using LiDAR measurements and PID control.
+
+**Fallback**: If none of the above behaviours can provide a valid navigation command, the robot continues straight at the cruise speed.
+
+This hierarchy prevents conflicting behaviours from simultaneously controlling the steering system and ensures that immediate safety conditions take precedence over normal navigation.
 
 ### 6) Tuning Notes
 
