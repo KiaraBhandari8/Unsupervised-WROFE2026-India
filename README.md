@@ -110,7 +110,7 @@ The Raspberry Pi Camera Module 3 Wide is used to identify the coloured obstacles
 
 The YDLidar T-Mini Plus provides distance measurements around the robot. These measurements are used for wall following, obstacle detection, and determining the available space around the robot.
 
-The GY-87 IMU provides motion and orientation data, which can be used to detect changes in the robot's movement and assist with navigation.
+The GY-87 IMU provides accelerometer and gyroscope data. Gyroscope yaw data is used by the navigation software for heading correction, cornering, and lane re-centering after obstacle avoidance.
 
 The navigation system combines information from these sensors to determine the appropriate steering angle and motor speed. The Raspberry Pi processes the sensor data and sends movement commands to the ESP32, which controls the steering servo and drive motors.
 
@@ -134,13 +134,25 @@ The navigation algorithm compares the measured distance with the desired wall di
 
 ### 3) Obstacle Handling Calculations
 
-When an obstacle is detected, the robot determines its colour and position using the camera.
+The robot uses the Raspberry Pi Camera Module 3 Wide to detect the track and coloured obstacles. The image-processing pipeline consists of several stages:
 
-The navigation system then selects the appropriate direction around the obstacle while considering LiDAR distance measurements and the robot's current movement.
+1. **Image acquisition:** The camera captures the complete view in front of the robot.
+
+2. **Track masking:** A mask is applied to identify the drivable track region. Geometric conditions are used to filter the detected region, including requirements for the region to reach the bottom of the image. This helps identify the area of the track that is relevant to the robot's current position.
+
+3. **Obstacle detection:** Potential obstacles are detected within the camera image using geometric and colour-based conditions. Conditions such as the obstacle's height, width, position, and relationship with the track are used to filter detections and produce an obstacle mask.
+
+4. **Obstacle localisation:** Once an obstacle is detected, its size and image coordinates are extracted. These measurements are used to estimate its position and distance relative to the robot.
+
+5. **Steering calculation:** The detected obstacle position is used to determine the required steering response. PID controllers are used to adjust the steering based on the calculated error.
+
+6. **Parameter tuning:** HSV and LAB colour thresholds and PID parameters are tuned experimentally through repeated testing. The Flask-based tuning interface allows vision parameters to be adjusted during testing without repeatedly changing the main source code.
 
 ### 4) Crash Detection
 
-The robot uses sensor data to monitor unexpected changes in movement. IMU measurements can be used to identify sudden changes in acceleration or orientation that may indicate a collision or abnormal movement.
+The LiDAR is used to detect imminent collisions by monitoring the distance in the forward region of the robot. When an obstacle is detected within the defined safety threshold, collision avoidance is given priority over normal navigation.
+
+The navigation system determines an escape direction based on the available space and temporarily overrides the normal steering behaviour to avoid the collision.
 
 ### 5) Arbitration: Choosing the Action
 
