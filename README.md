@@ -50,5 +50,32 @@ The challenge requires students to construct an autonomous robot which will unde
 | Name of Component | Quantity |
 | ---- | ---- |
 | Raspberry Pi 5 (Cooling Fan + SD Card) | 1 |
-| Pi Camera Module 3 Wide Angle | 1 |
-| ESP 32 | 1 |
+| Raspberry Pi Camera Module 3 Wide | 1 |
+| ESP32 Development Board | 1 |
+| YDLidar T-Mini Plus LiDAR | 1 |
+| PCA9685 16-Channel PWM Servo Driver | 1 |
+| TB6612FNG Dual Motor Driver | 1 |
+| GY-87 10-DOF Multi-Sensor IMU Module | 1 |
+| Silicon Labs CP2102 USB-to-UART Bridge | 1 |
+| MG996 Servo Motor | 1 |
+| N20 200 rpm Gear Motors | 2 |
+| LiPo 3s 11.1v 2200 mAh Battery | 1 |
+| LM2596 Step-Down (Buck) DC-DC Switching Voltage Regulator Integrated Circuit (ESP32) | 1 |
+| XY-3606 DC-DC Step-Down Buck Converter Module (Raspberry Pi) | 1 |
+| RC Car Rear Differential | 1 |
+| N20 wheels | 4 |
+| Lazy Susan Turntable Bearings | 1 |
+
+## Robot Pictures
+
+## Mobility Management
+
+The robot uses a rear-wheel-drive system consisting of two N20 200 RPM gear motors connected to an RC car rear differential. The differential transfers the motors' motion to the rear wheels while allowing the wheels to rotate at different speeds during turns. Steering is provided by an MG996 servo motor connected to the front steering mechanism. The robot uses four N20 wheels, with the rear wheels being driven and the front wheels used for steering. A Lazy Susan turntable bearing supports the steering assembly.
+
+### Controlling the Motors
+
+The two N20 gear motors are controlled by the ESP32 through the TB6612FNG dual motor driver. The Raspberry Pi sends movement commands to the ESP32, which controls the motors according to the required speed and direction. The MG996 steering servo is controlled by the ESP32 through the PCA9685 PWM servo driver.
+
+## Building Instructions
+
+## Power & Sense Management
