@@ -84,13 +84,13 @@ The robot is powered by a LiPo 3S 11.1 V 2200 mAh battery. DC-DC buck converters
 
 ### Hardware Architecture
 
-The Raspberry Pi 5 acts as the main computing unit. It processes data from the Raspberry Pi Camera Module 3 Wide and YDLidar T-Mini Plus LiDAR and runs the robot's navigation algorithms.
+The Raspberry Pi 5 acts as the main computing unit and processes data from the Raspberry Pi Camera Module 3 Wide and YDLidar T-Mini Plus LiDAR. The Raspberry Pi communicates with the ESP32 through a serial connection to send movement and steering commands.
 
-The ESP32 handles real-time control of the robot. It receives movement commands from the Raspberry Pi and controls the N20 gear motors through the TB6612FNG motor driver. Steering is controlled by the MG996 servo through the PCA9685 PWM servo driver.
+The ESP32 handles real-time motor and steering control and interfaces with the robot's sensors. The GY-87 10-DOF IMU provides accelerometer and gyroscope data to estimate the robot's orientation and heading. Gyroscope yaw data is streamed from the ESP32 to the Raspberry Pi and is used by the navigation software for heading correction, cornering, and lane re-centering after obstacle avoidance.
 
-The GY-87 10-DOF IMU provides motion and orientation data to assist with navigation and movement monitoring.
+The YDLidar T-Mini Plus provides distance measurements around the robot for wall following and collision avoidance, while the camera provides visual information for detecting and avoiding coloured obstacles.
 
-Communication between the Raspberry Pi and ESP32 allows high-level navigation decisions made by the Raspberry Pi to be translated into real-time motor and steering commands by the ESP32.
+The PCA9685 PWM driver controls the MG996 steering servo, while the TB6612FNG motor driver controls the N20 drive motors.
 
 ### Security Measures
 
