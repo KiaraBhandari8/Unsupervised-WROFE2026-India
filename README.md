@@ -49,15 +49,16 @@ The challenge requires students to construct an autonomous robot which will unde
 
 | Name of Component | Quantity | Picture |
 | ---- | ---- | ---- | 
-| Raspberry Pi 5 (Cooling Fan + SD Card) | 1 | <img width="640" height="426" alt="image" src="https://github.com/user-attachments/assets/e4878e2a-ee42-4cbb-9076-6eee5a91137b" /> |
-| Raspberry Pi Camera Module 3 Wide | 1 | <img width="372" height="600" alt="image" src="https://github.com/user-attachments/assets/e67ea9f3-6510-4a26-8285-e8302a622a39" /> |
-| ESP32 Development Board | 1 | <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/d5deb83d-41c4-404e-a340-20d3ba21cfaf" /> |
-| YDLidar T-Mini Plus LiDAR | 1 | <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/0a3fde64-41e3-4732-825b-1a5cbe024fa0" /> |
-| PCA9685 16-Channel PWM Servo Driver | 1 |
-| TB6612FNG Dual Motor Driver | 1 |
-| GY-87 10-DOF Multi-Sensor IMU Module | 1 |
-| Silicon Labs CP2102 USB-to-UART Bridge | 1 |
-| MG996 Servo Motor | 1 |
+| Raspberry Pi 5 (Cooling Fan + SD Card) | 1 | <img width="100" height="66.56" alt="image" src="https://github.com/user-attachments/assets/e4878e2a-ee42-4cbb-9076-6eee5a91137b" /> |
+| Raspberry Pi Camera Module 3 Wide | 1 | <img width="62" height="100" alt="image" src="https://github.com/user-attachments/assets/e67ea9f3-6510-4a26-8285-e8302a622a39" /> |
+| ESP32 Development Board | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/d5deb83d-41c4-404e-a340-20d3ba21cfaf" /> |
+| YDLidar T-Mini Plus LiDAR | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/0a3fde64-41e3-4732-825b-1a5cbe024fa0" /> |
+| PCA9685 16-Channel PWM Servo Driver | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/f667c49a-ed28-44c9-a9d9-43d50fd700eb" /> |
+| TB6612FNG Dual Motor Driver | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/4f52e1c2-4c8d-45e9-8cb3-94717e99e67c" /> |
+| GY-87 10-DOF Multi-Sensor IMU Module | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/06444ccd-9718-44a6-9ecc-b5ebb76ae830" /> |
+| Silicon Labs CP2102 USB-to-UART Bridge | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/51b86460-cb8d-4ee2-b4d7-cae04b5f1223" /> |
+| HC-SR04 Ultrasonic Sensor | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/6b3e06b6-78e6-4789-aa50-27cb1e9129cb" /> |
+| MG996 Servo Motor | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/4e8ed4f9-2cff-482b-ac7c-e2f42677f6e7" /> |
 | N20 200 rpm Gear Motors | 2 |
 | LiPo 3s 11.1v 2200 mAh Battery | 1 |
 | LM2596 Step-Down (Buck) DC-DC Switching Voltage Regulator Integrated Circuit (ESP32) | 1 |
