@@ -47,12 +47,12 @@ The challenge requires students to construct an autonomous robot which will unde
 
 ## List of Components
 
-| Name of Component | Quantity |
-| ---- | ---- |
-| Raspberry Pi 5 (Cooling Fan + SD Card) | 1 |
-| Raspberry Pi Camera Module 3 Wide | 1 |
-| ESP32 Development Board | 1 |
-| YDLidar T-Mini Plus LiDAR | 1 |
+| Name of Component | Quantity | Picture |
+| ---- | ---- | ---- | 
+| Raspberry Pi 5 (Cooling Fan + SD Card) | 1 | <img width="640" height="426" alt="image" src="https://github.com/user-attachments/assets/e4878e2a-ee42-4cbb-9076-6eee5a91137b" /> |
+| Raspberry Pi Camera Module 3 Wide | 1 | <img width="372" height="600" alt="image" src="https://github.com/user-attachments/assets/e67ea9f3-6510-4a26-8285-e8302a622a39" /> |
+| ESP32 Development Board | 1 | <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/d5deb83d-41c4-404e-a340-20d3ba21cfaf" /> |
+| YDLidar T-Mini Plus LiDAR | 1 | <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/0a3fde64-41e3-4732-825b-1a5cbe024fa0" /> |
 | PCA9685 16-Channel PWM Servo Driver | 1 |
 | TB6612FNG Dual Motor Driver | 1 |
 | GY-87 10-DOF Multi-Sensor IMU Module | 1 |
