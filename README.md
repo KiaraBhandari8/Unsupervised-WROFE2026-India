@@ -59,12 +59,12 @@ The challenge requires students to construct an autonomous robot which will unde
 | Silicon Labs CP2102 USB-to-UART Bridge | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/51b86460-cb8d-4ee2-b4d7-cae04b5f1223" /> |
 | HC-SR04 Ultrasonic Sensor | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/6b3e06b6-78e6-4789-aa50-27cb1e9129cb" /> |
 | MG996 Servo Motor | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/4e8ed4f9-2cff-482b-ac7c-e2f42677f6e7" /> |
-| N20 200 rpm Gear Motors | 2 |
-| LiPo 3s 11.1v 2200 mAh Battery | 1 |
-| LM2596 Step-Down (Buck) DC-DC Switching Voltage Regulator Integrated Circuit (ESP32) | 1 |
-| XY-3606 DC-DC Step-Down Buck Converter Module (Raspberry Pi) | 1 |
-| RC Car Rear Differential | 1 |
-| N20 wheels | 4 |
+| N20 200 rpm Gear Motors | 2 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/79ed59ec-01e8-4c4c-be57-d74fc5afe898" /> |
+| LiPo 3s 11.1v 2200 mAh Battery | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/975ba1bc-026f-4a03-b727-340d5b2d7c12" /> |
+| LM2596 Step-Down (Buck) DC-DC Switching Voltage Regulator Integrated Circuit (ESP32) | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/3a850fdf-1e0b-4753-a041-a333159d0240" /> |
+| XY-3606 DC-DC Step-Down Buck Converter Module (Raspberry Pi) | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/8af8d885-89c7-4b68-9acc-c355d38f7582" /> |
+| RC Car Rear Differential | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/783b6d71-c0a7-4619-8c8f-c254a46ddcd5" /> |
+| N20 wheels | 4 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/e54c118c-2956-4393-8d43-4b2afd229bf5" /> |
 | Lazy Susan Turntable Bearings | 1 |
 
 ## Robot Pictures
