@@ -69,6 +69,10 @@ The challenge requires students to construct an autonomous robot which will unde
 
 ## Robot Pictures
 
+<img width="368" height="368" alt="WhatsApp Video 2026-08-18 at 6 07 50 PM" src="https://github.com/user-attachments/assets/8adb4acc-fa81-404d-aa8e-ae388952254d" />
+
+<br> 
+
 <img width="500" height="500" alt="WhatsApp_Image_2026-08-16_at_4 10 52_PM-removebg-preview" src="https://github.com/user-attachments/assets/085e3bab-6de9-441b-9f75-7253f9bef07a" />
 
 Left view
@@ -96,6 +100,8 @@ Front view
 ## Mobility Management
 
 The robot uses a rear-wheel-drive system consisting of two N20 200 RPM gear motors connected to an RC car rear differential. The differential transfers the motors' motion to the rear wheels while allowing the wheels to rotate at different speeds during turns. Steering is provided by an MG996 servo motor connected to the front steering mechanism. The robot uses four N20 wheels, with the rear wheels being driven and the front wheels used for steering. A Lazy Susan turntable bearing supports the steering assembly.
+
+<img width="500" height="500" alt="WhatsApp Image 2026-08-18 at 6 07 51 PM" src="https://github.com/user-attachments/assets/eb0bfc8a-20ac-4862-9531-c909dcd38ae6" />
 
 ### Controlling the Motors
 
