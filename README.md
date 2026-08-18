@@ -69,9 +69,11 @@ The challenge requires students to construct an autonomous robot which will unde
 
 ## Robot Pictures
 
-<img width="368" height="368" alt="WhatsApp Video 2026-08-18 at 6 07 50 PM" src="https://github.com/user-attachments/assets/8adb4acc-fa81-404d-aa8e-ae388952254d" />
+<img width="500" height="500" alt="WhatsApp Video 2026-08-18 at 6 07 50 PM" src="https://github.com/user-attachments/assets/8adb4acc-fa81-404d-aa8e-ae388952254d" />
 
-<br> 
+360° view
+
+<br> <br>
 
 <img width="500" height="500" alt="WhatsApp_Image_2026-08-16_at_4 10 52_PM-removebg-preview" src="https://github.com/user-attachments/assets/085e3bab-6de9-441b-9f75-7253f9bef07a" />
 
