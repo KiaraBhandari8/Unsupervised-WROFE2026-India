@@ -151,6 +151,10 @@ The navigation system combines information from these sensors to determine the a
 
 ### 1) Image Pipeline (Inputs Used by Algorithms)
 
+<img width="444" height="250" alt="Untitled design-2-2" src="https://github.com/user-attachments/assets/d5c46602-b48c-4c1b-8e20-0aed8f2d05d7" />
+
+**Obstacle Detection Algorithm**
+
 The camera captures images of the arena, which are processed on the Raspberry Pi.
 
 The image-processing pipeline consists of:
