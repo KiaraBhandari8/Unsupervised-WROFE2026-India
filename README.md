@@ -159,11 +159,12 @@ The camera captures images of the arena, which are processed on the Raspberry Pi
 
 The image-processing pipeline consists of:
 1. Capturing an image from the camera.
-2. Converting the image into a suitable colour space.
-3. Detecting the relevant coloured regions.
-4. Identifying red and green obstacles.
-5. Determining the position of detected obstacles.
-6. Passing the resulting information to the navigation algorithm.
+2. Converting the image into a HSV colour space.
+3. Segmenting the track.
+4. Detecting the relevant coloured regions.
+5. Identifying red and green obstacles.
+6. Determining the position of detected obstacles.
+7. Passing the resulting information to the navigation algorithm.
 
 ### 2) Wall Following Calculations
 
