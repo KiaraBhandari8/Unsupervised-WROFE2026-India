@@ -8,6 +8,7 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
   - [Table of Contents](#table-of-contents)
   - [Team](#team)
   - [About the challenge](#about-the-challenge)
+  - [Performance Videos](#performance-videos)
   - [List of Components](#list-of-components)
   - [Robot Pictures](#robot-pictures)
   - [Mobility Management](#mobility-management)
@@ -44,6 +45,14 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
 The World Robot Olympiad (WRO) is an international robotics competition that encourages students to develop problem-solving, programming, and engineering skills. The Future Engineers category is designed for students aged 14–22 years and focuses on autonomous driving. The challenge simulates real-world traffic conditions and requires teams to design and program a fully autonomous robot car.
 
 The challenge requires students to construct an autonomous robot which will undergo 2 rounds. First, an open round challenge where the robot would need to complete 3 rounds around the arena within the time limit of 3 minutes (180 seconds). The second round, which is the obstacle round consists of navigating through red and green pillars, where the robot would move from the left of the green pillar and from right of the red pillar. The robot should once again, not exceed a time limit of 3 minutes.
+
+## Performance Videos
+### Challenge 1
+[Open Challenge Video 1 - Practice before Nationals on Youtube](https://youtu.be/0ms9o5Httb8?si=1wx8qC69ZG0JPVR6)
+
+### Challenge 2
+[Obstacle Round Video 1 - Practice before Nationals on Youtube](https://youtu.be/hUuTf3fS2V0?si=C6_U4KdSrS-R3kdz)
+[Obstacle Round Video 2 - Practice before Nationals on Youtube](https://youtu.be/6QX_Y3WPMX4?si=ZPCf-lAfKMT5tgFE)
 
 ## List of Components
 
@@ -217,4 +226,12 @@ This hierarchy prevents conflicting behaviours from simultaneously controlling t
 ### 6) Tuning Notes
 
 The steering and navigation parameters are tuned through repeated testing on the arena. Parameters such as steering corrections, motor speed, wall-following distance, and obstacle detection thresholds are adjusted to improve stability and reduce unnecessary corrections.
+
+### Block Diagrams
+#### Open Round Block Diagrams
+
+#### Obstacle Round Diagrams
+
+##### Others 
+Corner Logic 
 
