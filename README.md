@@ -227,3 +227,11 @@ This hierarchy prevents conflicting behaviours from simultaneously controlling t
 
 The steering and navigation parameters are tuned through repeated testing on the arena. Parameters such as steering corrections, motor speed, wall-following distance, and obstacle detection thresholds are adjusted to improve stability and reduce unnecessary corrections.
 
+### Block Diagrams
+#### Open Round Block Diagrams
+
+#### Obstacle Round Diagrams
+
+##### Others 
+Corner Logic 
+
