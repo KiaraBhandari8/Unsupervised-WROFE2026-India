@@ -215,7 +215,7 @@ This hierarchy prevents conflicting behaviours from simultaneously controlling t
 
 ### 6) Tuning Notes
 
-The steering and navigation parameters are tuned through repeated testing on the arena. Parameters such as steering corrections, motor speed, wall-following distance, and obstacle detection thresholds are adjusted to improve stability and reduce unnecessary corrections.
+The steering and navigation parameters are tuned through repeated testing on the arena. Parameters such as steering corrections, motor speed, wall-following distance, and obstacle detection thresholds are adjusted to improve stability and reduce unnecessary corrections. Colour parameters for obstacles can be tuned using an HSV adjuster on a Flask interface while the robot is running.
 
 ### Block Diagrams
 #### Open Round Block Diagrams
