@@ -205,7 +205,7 @@ The navigation system determines an escape direction based on the available spac
 
 ### 5) Arbitration: Choosing the Action
 
-<img width="1408" height="768" alt="Gemini_Generated_Image_q42czsq42czsq42c" src="https://github.com/user-attachments/assets/dd3eb03c-4fba-4238-89aa-213cab1025aa" />
+<img width="1408" height="768" alt="Untitled Design" src="https://github.com/user-attachments/assets/68b66ad2-d5f8-44d3-a4d0-17001bd82647" />
 
 The navigation system uses a priority-based arbitration system to determine which behaviour should control the robot at any given moment. Higher-priority behaviours override lower-priority behaviours when multiple conditions are detected simultaneously.
 
