@@ -84,29 +84,17 @@ The challenge requires students to construct an autonomous robot which will unde
 
 <br> <br>
 
-<img width="500" height="500" alt="WhatsApp_Image_2026-08-16_at_4 10 52_PM-removebg-preview" src="https://github.com/user-attachments/assets/085e3bab-6de9-441b-9f75-7253f9bef07a" />
+| Front View | Back View |
+| --- | --- |
+| <img src="v-photos/front.png" width="200" alt="Front View"> | <img src="v-photos/back.png" width="200" alt="Back View"> |
 
-Left view
+| Left View | Right View |
+| --- | --- |
+| <img src="v-photos/left.png" width="200" alt="Left View"> | <img src="v-photos/right.png" width="200" alt="Right View"> |
 
-<img width="500" height="500" alt="WhatsApp_Image_2026-08-16_at_4 10 58_PM-removebg-preview" src="https://github.com/user-attachments/assets/30e1fbaf-e986-4d2e-a7de-0670cc068387" />
-
-Right view
-
-<img width="500" height="500" alt="WhatsApp_Image_2026-08-16_at_4 47 46_PM-removebg-preview" src="https://github.com/user-attachments/assets/da6f396a-aa0f-4288-9064-95242ebf69c3" />
-
-Bottom view
-
-<img width="500" height="500" alt="WhatsApp_Image_2026-08-16_at_4 10 59_PM-removebg-preview" src="https://github.com/user-attachments/assets/107bd50e-d06e-4308-ae95-19435c92cac6" />
-
-Top view 
-
-<img width="500" height="500" alt="WhatsApp_Image_2026-08-16_at_4 10 58_PM-2-removebg-preview" src="https://github.com/user-attachments/assets/3137948a-fbdb-4bc8-a110-cac7ef536a19" />
-
-Back view
-
-<img width="500" height="500" alt="WhatsApp_Image_2026-08-16_at_4 10 59_PM-2-removebg-preview" src="https://github.com/user-attachments/assets/3eefb95e-8097-4f98-a25e-12021db82f83" />
-
-Front view
+| Top View | Bottom View |
+| --- | --- |
+| <img src="v-photos/top.png" width="200" alt="Top View"> | <img src="v-photos/bottom.png" width="200" alt="Bottom View"> |
 
 ## Mobility Management
 
