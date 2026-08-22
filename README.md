@@ -205,7 +205,7 @@ The navigation system determines an escape direction based on the available spac
 
 ### 5) Arbitration: Choosing the Action
 
-<img width="1408" height="768" alt="Untitled Design" src="https://github.com/user-attachments/assets/68b66ad2-d5f8-44d3-a4d0-17001bd82647" />
+<img width="512" height="738" alt="ChatGPT Image Aug 22, 2026 at 11_03_22 AM" src="https://github.com/user-attachments/assets/2a74648f-89eb-4ce7-b8eb-18902a376492" />
 
 The navigation system uses a priority-based arbitration system to determine which behaviour should control the robot at any given moment. Higher-priority behaviours override lower-priority behaviours when multiple conditions are detected simultaneously.
 
