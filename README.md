@@ -84,17 +84,13 @@ The challenge requires students to construct an autonomous robot which will unde
 
 <br> <br>
 
-| Front View | Back View |
-| --- | --- |
-| <img src="v-photos/front.png" width="200" alt="Front View"> | <img src="v-photos/back.png" width="200" alt="Back View"> |
+| Front View | Left View | Top View |
+| --- | --- | --- |
+| <img src="v-photos/front.png" width="200" alt="Front View"> | <img src="v-photos/left.png" width="200" alt="Left View"> | <img src="v-photos/top.png" width="200" alt="Top View"> |
 
-| Left View | Right View |
-| --- | --- |
-| <img src="v-photos/left.png" width="200" alt="Left View"> | <img src="v-photos/right.png" width="200" alt="Right View"> |
-
-| Top View | Bottom View |
-| --- | --- |
-| <img src="v-photos/top.png" width="200" alt="Top View"> | <img src="v-photos/bottom.png" width="200" alt="Bottom View"> |
+| Back View | Right View | Bottom View |
+| --- | --- | --- |
+| <img src="v-photos/back.png" width="200" alt="Back View"> | <img src="v-photos/right.png" width="200" alt="Right View"> | <img src="v-photos/bottom.png" width="200" alt="Bottom View"> |
 
 ## Mobility Management
 
