@@ -8,7 +8,7 @@
 
 The **Raspberry Pi 5** acts as the brain of the robot. It processes the camera and LiDAR data, runs the computer vision and navigation algorithms, makes movement decisions, and sends the resulting commands to the **ESP32**. The ESP32 then handles the low-level motor and actuator control.
 
-[Link](https://robu.in/product/raspberry-pi-5-model-8gb/)
+[Buy it here](https://robu.in/product/raspberry-pi-5-model-8gb/)
 
 ---
 
@@ -22,7 +22,7 @@ The **Raspberry Pi 5** acts as the brain of the robot. It processes the camera a
 
 The **Raspberry Pi Camera Module 3 Wide** provides visual input to the robot. Its wide field of view allows the robot to capture a larger portion of the track, which is useful for **track detection, object identification, and navigation**.
 
-[Link](https://robu.in/product/raspberry-pi-camera-module-3-wide/)
+[Buy it here](https://robu.in/product/raspberry-pi-camera-module-3-wide/)
 
 ---
 
@@ -36,7 +36,7 @@ The **Raspberry Pi Camera Module 3 Wide** provides visual input to the robot. It
 
 The **ESP32** acts as the robot's low-level motor controller. It receives movement commands from the **Raspberry Pi 5**, which performs the main vision, sensor processing, decision-making, and navigation. The ESP32 converts these commands into control signals for the **motor driver and steering servo**, allowing the robot to physically execute the decisions made by the Raspberry Pi.
 
-[Link](https://robu.in/product/esp32-s3-devkit-esp32-s3-wroom-1-n16r8/)
+[Buy it here](https://robu.in/product/esp32-s3-devkit-esp32-s3-wroom-1-n16r8/)
 
 ---
 
@@ -50,7 +50,7 @@ The **ESP32** acts as the robot's low-level motor controller. It receives moveme
 
 The **YDLidar T-Mini Plus** provides 2D distance measurements around the robot. The LiDAR data is used for **obstacle detection, wall following, collision avoidance, and navigation decisions**.
 
-[Link](https://robu.in/product/ydlidar-t-mini-plus-lidar-sensor/)
+[Buy it here](https://robu.in/product/ydlidar-t-mini-plus-lidar-sensor/)
 
 ---
 
@@ -64,7 +64,7 @@ The **YDLidar T-Mini Plus** provides 2D distance measurements around the robot. 
 
 The **PCA9685** is used to generate PWM signals for controlling the robot's servo motor. It communicates with the controller through the **I²C interface**, providing precise control of the steering mechanism.
 
-[Link](https://robu.in/product/16-channel-12-bit-pwmservo-driver-i2c-interface-pca9685-arduino-raspberry-pi/)
+[Buy it here](https://robu.in/product/16-channel-12-bit-pwmservo-driver-i2c-interface-pca9685-arduino-raspberry-pi/)
 
 ---
 
@@ -78,7 +78,7 @@ The **PCA9685** is used to generate PWM signals for controlling the robot's serv
 
 The **TB6612FNG** is used to control the robot's DC motors. It allows the ESP32 to control the **direction and speed** of the motors using PWM signals.
 
-[Link](https://robu.in/product/motor-driver-tb6612fng-module-performance-ultra-small-volume-3-pi-matching-performance-ultra-l298n/)
+[Buy it here](https://robu.in/product/motor-driver-tb6612fng-module-performance-ultra-small-volume-3-pi-matching-performance-ultra-l298n/)
 
 ---
 
@@ -92,7 +92,7 @@ The **TB6612FNG** is used to control the robot's DC motors. It allows the ESP32 
 
 The **GY-87 IMU** provides information about the robot's movement and orientation. It can be used to monitor **rotation, acceleration, and changes in orientation** during navigation.
 
-[Link](https://robu.in/product/mpu6050hmc5883lbmp180-10dof-3-axis-gyro-3-axis-acceleration-3-axis-magnetic-field-air-pres/)
+[Buy it here](https://robu.in/product/mpu6050hmc5883lbmp180-10dof-3-axis-gyro-3-axis-acceleration-3-axis-magnetic-field-air-pres/)
 
 ---
 
@@ -106,7 +106,7 @@ The **GY-87 IMU** provides information about the robot's movement and orientatio
 
 The **CP2102** is used as a USB-to-UART interface for communication with the microcontroller and for **programming, debugging, and serial communication**.
 
-[Link](https://robu.in/product/cp2102-gmr-skyworks-silicon-labs-12mbps-transceiver-wqfn-28-ep5x5-usb-converters-rohs/)
+[Buy it here](https://robu.in/product/cp2102-gmr-skyworks-silicon-labs-12mbps-transceiver-wqfn-28-ep5x5-usb-converters-rohs/)
 
 ---
 
@@ -120,7 +120,7 @@ The **CP2102** is used as a USB-to-UART interface for communication with the mic
 
 The **HC-SR04** measures distance using ultrasonic waves. It can provide an additional proximity measurement for detecting objects near the robot.
 
-[Link](https://robu.in/product/3-3-5-5v-hc-sr04-ultrasonic-sensor-4pin/)
+[Buy it here](https://robu.in/product/3-3-5-5v-hc-sr04-ultrasonic-sensor-4pin/)
 
 ---
 
@@ -134,7 +134,7 @@ The **HC-SR04** measures distance using ultrasonic waves. It can provide an addi
 
 The **MG996 Servo Motor** is used to control the robot's steering mechanism. Its position is controlled using PWM signals generated through the **PCA9685 servo driver**.
 
-[Link](https://robu.in/product/towerpro-mg995-servo-high-speed-digital-metal-gear-servo-motor-cnc-aluminum-steering-servo-horn-arm-good-quality/)
+[Buy it here](https://robu.in/product/towerpro-mg995-servo-high-speed-digital-metal-gear-servo-motor-cnc-aluminum-steering-servo-horn-arm-good-quality/)
 
 ---
 
@@ -148,7 +148,7 @@ The **MG996 Servo Motor** is used to control the robot's steering mechanism. Its
 
 Following an evaluation of different motors, we selected the **N20 200 RPM Gear Motors** for propulsion. Their compact size and geared design provide suitable torque while keeping the robot lightweight. The motors are connected to the **TB6612FNG motor driver** for speed and direction control.
 
-[Link](https://robu.in/product/n20-6v-100-rpm-micro-metal-gear-box-dc-motor-2/)
+[Buy it here](https://robu.in/product/n20-6v-100-rpm-micro-metal-gear-box-dc-motor-2/)
 
 ---
 
@@ -162,7 +162,7 @@ Following an evaluation of different motors, we selected the **N20 200 RPM Gear 
 
 The **3S LiPo battery** serves as the primary power source for the robot. Its relatively high energy density allows it to power the motors and electronic systems while maintaining a compact form factor.
 
-[Link](https://robu.in/product/orange-2200mah-3s-30c60c-lithium-polymer-battery-pack-lipo/)
+[Buy it here](https://robu.in/product/orange-2200mah-3s-30c60c-lithium-polymer-battery-pack-lipo/)
 
 ---
 
@@ -176,7 +176,7 @@ The **3S LiPo battery** serves as the primary power source for the robot. Its re
 
 The **LM2596 buck converter** reduces the battery voltage to a suitable regulated voltage for the **ESP32 and associated electronics**. This provides a more appropriate supply voltage while improving power efficiency.
 
-[Link](https://robu.in/product/lm2596-buck-step-power-converter-module-dc-4-040-1-3-37v-led-voltmeter/)
+[Buy it here](https://robu.in/product/lm2596-buck-step-power-converter-module-dc-4-040-1-3-37v-led-voltmeter/)
 
 ---
 
@@ -190,7 +190,7 @@ The **LM2596 buck converter** reduces the battery voltage to a suitable regulate
 
 The **XY-3606 buck converter** is used to regulate the battery voltage to a suitable level for powering the **Raspberry Pi 5**. This allows the computing system to receive a stable power supply from the main battery.
 
-[Link](https://robu.in/product/24v-12v-to-5v-5a-power-module-dc-dc-xy-3606-power-converter/)
+[Buy it here](https://robu.in/product/24v-12v-to-5v-5a-power-module-dc-dc-xy-3606-power-converter/)
 
 ---
 
@@ -204,7 +204,7 @@ The **XY-3606 buck converter** is used to regulate the battery voltage to a suit
 
 The **RC Car Rear Differential** transfers power from the motors to the rear wheels while allowing the wheels to rotate at different speeds when turning. This improves the robot's ability to negotiate corners smoothly.
 
-[Link](https://www.daddydrones.in/mjx-hypergo-16420y-metal-differential-1-14-rc-cars-14301-14303?srsltid=AfmBOoroIT2cUJfjCjysMz7nRBXE7Pnv0Dtjo55qHZ8IfWWZk6aML6wZ)
+[Buy it here](https://www.daddydrones.in/mjx-hypergo-16420y-metal-differential-1-14-rc-cars-14301-14303?srsltid=AfmBOoroIT2cUJfjCjysMz7nRBXE7Pnv0Dtjo55qHZ8IfWWZk6aML6wZ)
 
 ---
 
@@ -218,7 +218,7 @@ The **RC Car Rear Differential** transfers power from the motors to the rear whe
 
 The **N20 wheels** provide the robot with traction and allow the motor torque to be transferred to the track surface. Four wheels are used to provide stable contact with the ground.
 
-[Link](https://robu.in/product/3pi-miniq-car-wheel-tyre-42mm-n20-dc-gear-motor-wheel/)
+[Buy it here](https://robu.in/product/3pi-miniq-car-wheel-tyre-42mm-n20-dc-gear-motor-wheel/)
 
 ---
 
@@ -232,5 +232,5 @@ The **N20 wheels** provide the robot with traction and allow the motor torque to
 
 The **Lazy Susan turntable bearing** is used as a mechanical support component to allow smooth rotational movement while reducing friction. It contributes to the mechanical stability and movement of the robot.
 
-[Link](https://www.amazon.in/VXB-Capacity-Bearing-Turntable-Bearings/dp/B002TIKEQ6)
+[Buy it here](https://www.amazon.in/VXB-Capacity-Bearing-Turntable-Bearings/dp/B002TIKEQ6)
 
