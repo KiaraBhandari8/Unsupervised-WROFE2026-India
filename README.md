@@ -102,7 +102,15 @@ The robot uses a rear-wheel-drive system consisting of two N20 200 RPM gear moto
 
 The two N20 gear motors are controlled by the ESP32 through the TB6612FNG dual motor driver. The Raspberry Pi sends movement commands to the ESP32, which controls the motors according to the required speed and direction. The MG996 steering servo is controlled by the ESP32 through the PCA9685 PWM servo driver.
 
+-------------------------------------------------------
 ## Building Instructions
+- **Parts list** <br>
+  Make sure you have all components ready before starting: 3D-printed parts, motors, drivers, electronics, screws, sensors and connectors. A complete detailed table with quantities, sources, link, prices and usage is included below for reference.<br>
+[Click here to open the parts list](mech/components)
+
+- **3D Printing Parts**<br>
+  Using any 3D printer, start by 3D printing the necessary parts for the assembly. We used a Prusa Core 1. Every part needed has a STL file which you can use with any printer. If you're adventurous and want to modify a part, open the .STL file in your favorite CAD software. If you're unsure of what part you're printing, make sure to open the PNG file which contains a picture of the part.<br>
+
 
 ## Power & Sense Management
 
