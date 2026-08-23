@@ -1,229 +1,201 @@
-# Unsupervised-WROFE2026-India
-
-Official repository of Team Unsupervised for the World Robot Olympiad Future Engineers 2026. This project documents the design, development, and implementation of our autonomous vehicle, integrating computer vision, embedded systems, and real-time navigation algorithms to solve the Future Engineers challenge.
-
-## Table of Contents
-
-- [Unsupervised-WROFE2026-India](#unsupervised-wrofe2026-india)
-  - [Table of Contents](#table-of-contents)
-  - [Team](#team)
-  - [About the challenge](#about-the-challenge)
-  - [Performance Videos](#performance-videos)
-  - [List of Components](#list-of-components)
-  - [Robot Pictures](#robot-pictures)
-  - [Mobility Management](#mobility-management)
-    - [Controlling the Motors](#controlling-the-motors)
-  - [Building Instructions](#building-instructions)
-  - [Power & Sense Management](#power--sense-management)
-    - [Hardware Architecture](#hardware-architecture)
-    - [Security Measures](#security-measures)
-      - [Current Stabilisation](#current-stabilisation)
-  - [Obstacle Management](#obstacle-management)
-    - [Vision Methods and Decision Making](#vision-methods-and-decision-making)
-    - [1) Image pipeline (inputs used by algorithms)](#1-image-pipeline-inputs-used-by-algorithms)
-    - [2) Wall following calculations](#2-wall-following-calculations)
-    - [3) Obstacle handling calculations](#3-obstacle-handling-calculations)
-    - [4) Crash detection](#4-crash-detection)
-    - [5) Arbitration: choosing the action](#5-arbitration-choosing-the-action)
-    - [6) Tuning notes](#6-tuning-notes)
-    - [Block diagrams](#block-diagrams)
-    - [Extras](#extras)
-  - [Software Key Components](#software-key-components)
-  - [Possible Improvements](#possible-improvements)
+### Raspberry Pi 5
 
-## Team
+**Raspberry Pi 5 (Cooling Fan + SD Card):**
 
-| Name           | Profile                                | Role        |
-| -------------- | -------------------------------------- | ----------- |
-| Kiara Bhandari | Grade 10 @ Oberoi International School | Team Member |
-| Shubh Gupta    | Grade 10 @ Chatrabhuj Narsee School    | Team Member |
-| Dhanak Seth    | Grade 8 @ Vibgyor High School          | Team Member |
-| Vinay Ummadi   | Mentor @ MakerWorks Lab                | Team Mentor |
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="66.56" alt="Raspberry Pi 5" src="https://github.com/user-attachments/assets/e4878e2a-ee42-4cbb-9076-6eee5a91137b" /> | 1. **Name:** Raspberry Pi 5<br><br>2. **Processor:** Quad-core 64-bit Arm Cortex-A76<br><br>3. **Memory:** 8 GB RAM<br><br>4. **Storage:** MicroSD Card<br><br>5. **Cooling:** Active cooling fan |
 
-## About the Challenge
+The **Raspberry Pi 5** serves as the primary processing unit of the robot. It handles computationally intensive tasks such as **computer vision, sensor processing, decision-making, and navigation**. An active cooling fan is used to maintain stable temperatures during continuous operation.
 
-The World Robot Olympiad (WRO) is an international robotics competition that encourages students to develop problem-solving, programming, and engineering skills. The Future Engineers category is designed for students aged 14–22 years and focuses on autonomous driving. The challenge simulates real-world traffic conditions and requires teams to design and program a fully autonomous robot car.
+---
 
-The challenge requires students to construct an autonomous robot which will undergo 2 rounds. First, an open round challenge where the robot would need to complete 3 rounds around the arena within the time limit of 3 minutes (180 seconds). The second round, which is the obstacle round consists of navigating through red and green pillars, where the robot would move from the left of the green pillar and from right of the red pillar. The robot should once again, not exceed a time limit of 3 minutes.
+### Raspberry Pi Camera Module 3 Wide
 
-## Performance Videos
-### Challenge 1
-[Open Challenge Video 1 - Practice before Nationals on Youtube](https://youtu.be/0ms9o5Httb8?si=1wx8qC69ZG0JPVR6)
+**Raspberry Pi Camera Module 3 Wide:**
 
-### Challenge 2
-[Obstacle Round Video 1 - Practice before Nationals on Youtube](https://youtu.be/hUuTf3fS2V0?si=C6_U4KdSrS-R3kdz) <br>
-[Obstacle Round Video 2 - Practice before Nationals on Youtube](https://youtu.be/6QX_Y3WPMX4?si=ZPCf-lAfKMT5tgFE)
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="62" height="100" alt="Raspberry Pi Camera Module 3 Wide" src="https://github.com/user-attachments/assets/e67ea9f3-6510-4a26-8285-e8302a622a39" /> | 1. **Name:** Raspberry Pi Camera Module 3 Wide<br><br>2. **Sensor:** Sony IMX708<br><br>3. **Field of View:** Wide-angle<br><br>4. **Interface:** CSI<br><br>5. **Use:** Image capture and computer vision |
 
-## List of Components
+The **Raspberry Pi Camera Module 3 Wide** provides visual input to the robot. Its wide field of view allows the robot to capture a larger portion of the track, which is useful for **track detection, object identification, and navigation**.
 
-| Name of Component | Quantity | Picture |
-| ---- | ---- | ---- | 
-| Raspberry Pi 5 (Cooling Fan + SD Card) | 1 | <img width="100" height="66.56" alt="image" src="https://github.com/user-attachments/assets/e4878e2a-ee42-4cbb-9076-6eee5a91137b" /> |
-| Raspberry Pi Camera Module 3 Wide | 1 | <img width="62" height="100" alt="image" src="https://github.com/user-attachments/assets/e67ea9f3-6510-4a26-8285-e8302a622a39" /> |
-| ESP32 Development Board | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/d5deb83d-41c4-404e-a340-20d3ba21cfaf" /> |
-| YDLidar T-Mini Plus LiDAR | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/0a3fde64-41e3-4732-825b-1a5cbe024fa0" /> |
-| PCA9685 16-Channel PWM Servo Driver | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/f667c49a-ed28-44c9-a9d9-43d50fd700eb" /> |
-| TB6612FNG Dual Motor Driver | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/4f52e1c2-4c8d-45e9-8cb3-94717e99e67c" /> |
-| GY-87 10-DOF Multi-Sensor IMU Module | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/06444ccd-9718-44a6-9ecc-b5ebb76ae830" /> |
-| Silicon Labs CP2102 USB-to-UART Bridge | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/51b86460-cb8d-4ee2-b4d7-cae04b5f1223" /> |
-| HC-SR04 Ultrasonic Sensor | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/6b3e06b6-78e6-4789-aa50-27cb1e9129cb" /> |
-| MG996 Servo Motor | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/4e8ed4f9-2cff-482b-ac7c-e2f42677f6e7" /> |
-| N20 200 rpm Gear Motors | 2 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/79ed59ec-01e8-4c4c-be57-d74fc5afe898" /> |
-| LiPo 3s 11.1v 2200 mAh Battery | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/975ba1bc-026f-4a03-b727-340d5b2d7c12" /> |
-| LM2596 Step-Down (Buck) DC-DC Switching Voltage Regulator Integrated Circuit (ESP32) | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/3a850fdf-1e0b-4753-a041-a333159d0240" /> |
-| XY-3606 DC-DC Step-Down Buck Converter Module (Raspberry Pi) | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/8af8d885-89c7-4b68-9acc-c355d38f7582" /> |
-| RC Car Rear Differential | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/783b6d71-c0a7-4619-8c8f-c254a46ddcd5" /> |
-| N20 wheels | 4 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/e54c118c-2956-4393-8d43-4b2afd229bf5" /> |
-| Lazy Susan Turntable Bearings | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/236d9dd5-82f3-4874-a29f-3ce52fc81cbf" /> | 
+---
 
-## Robot Pictures
+### ESP32 Development Board
 
-<img width="500" height="500" alt="WhatsApp Video 2026-08-18 at 6 07 50 PM" src="https://github.com/user-attachments/assets/8adb4acc-fa81-404d-aa8e-ae388952254d" />
+**ESP32 Development Board:**
 
-360° view
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="ESP32 Development Board" src="https://github.com/user-attachments/assets/d5deb83d-41c4-404e-a340-20d3ba21cfaf" /> | 1. **Name:** ESP32 Development Board<br><br>2. **Microcontroller:** ESP32<br><br>3. **Communication:** Serial communication<br><br>4. **Use:** Motor and actuator control |
 
-<br> <br>
+The **ESP32 Development Board** acts as the low-level controller of the robot. It receives commands from the Raspberry Pi and controls the motors and other actuators, allowing the high-level navigation system to communicate with the hardware efficiently.
 
-| Front View | Back View |
-| --- | --- |
-| <img src="v-photos/front.png" width="200" alt="Front View"> | <img src="v-photos/back.png" width="200" alt="Back View"> |
+---
 
-| Left View | Right View |
-| --- | --- |
-| <img src="v-photos/left.png" width="200" alt="Left View"> | <img src="v-photos/right.png" width="200" alt="Right View"> |
+### YDLidar T-Mini Plus LiDAR
 
-| Top View | Bottom View |
-| --- | --- |
-| <img src="v-photos/top.png" width="200" alt="Top View"> | <img src="v-photos/bottom.png" width="200" alt="Bottom View"> |
+**YDLidar T-Mini Plus LiDAR:**
 
-## Mobility Management
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="YDLidar T-Mini Plus LiDAR" src="https://github.com/user-attachments/assets/0a3fde64-41e3-4732-825b-1a5cbe024fa0" /> | 1. **Name:** YDLidar T-Mini Plus<br><br>2. **Type:** 2D LiDAR<br><br>3. **Scan Frequency:** Up to 10 Hz<br><br>4. **Interface:** USB / Serial<br><br>5. **Use:** Distance measurement and obstacle detection |
 
-The robot uses a rear-wheel-drive system consisting of two N20 200 RPM gear motors connected to an RC car rear differential. The differential transfers the motors' motion to the rear wheels while allowing the wheels to rotate at different speeds during turns. Steering is provided by an MG996 servo motor connected to the front steering mechanism. The robot uses four N20 wheels, with the rear wheels being driven and the front wheels used for steering. A Lazy Susan turntable bearing supports the steering assembly.
+The **YDLidar T-Mini Plus** provides 2D distance measurements around the robot. The LiDAR data is used for **obstacle detection, wall following, collision avoidance, and navigation decisions**.
 
-<img width="500" height="500" alt="WhatsApp Image 2026-08-18 at 6 07 51 PM" src="https://github.com/user-attachments/assets/eb0bfc8a-20ac-4862-9531-c909dcd38ae6" />
+---
 
-### Controlling the Motors
+### PCA9685 16-Channel PWM Servo Driver
 
-The two N20 gear motors are controlled by the ESP32 through the TB6612FNG dual motor driver. The Raspberry Pi sends movement commands to the ESP32, which controls the motors according to the required speed and direction. The MG996 steering servo is controlled by the ESP32 through the PCA9685 PWM servo driver.
+**PCA9685 16-Channel PWM Servo Driver:**
 
-## Building Instructions
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="PCA9685 16-Channel PWM Servo Driver" src="https://github.com/user-attachments/assets/f667c49a-ed28-44c9-a9d9-43d50fd700eb" /> | 1. **Name:** PCA9685 16-Channel PWM Servo Driver<br><br>2. **Channels:** 16 PWM channels<br><br>3. **Interface:** I²C<br><br>4. **I²C Address:** 0x40<br><br>5. **Use:** Servo control |
 
-## Power & Sense Management
+The **PCA9685** is used to generate PWM signals for controlling the robot's servo motor. It communicates with the controller through the **I²C interface**, providing precise control of the steering mechanism.
 
-The robot is powered by a LiPo 3S 11.1 V 2200 mAh battery. DC-DC buck converters regulate the battery voltage to suitable levels for the Raspberry Pi 5 and ESP32. The regulated power supplies allow the computing, sensing, and control components to operate reliably.
+---
 
-### Hardware Architecture
+### TB6612FNG Dual Motor Driver
 
-The Raspberry Pi 5 acts as the main computing unit and processes data from the Raspberry Pi Camera Module 3 Wide and YDLidar T-Mini Plus LiDAR. The Raspberry Pi communicates with the ESP32 through a serial connection to send movement and steering commands.
+**TB6612FNG Dual Motor Driver:**
 
-The ESP32 handles real-time motor and steering control and interfaces with the robot's sensors. The GY-87 10-DOF IMU provides accelerometer and gyroscope data to estimate the robot's orientation and heading. Gyroscope yaw data is streamed from the ESP32 to the Raspberry Pi and is used by the navigation software for heading correction, cornering, and lane re-centering after obstacle avoidance.
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="TB6612FNG Dual Motor Driver" src="https://github.com/user-attachments/assets/4f52e1c2-4c8d-45e9-8cb3-94717e99e67c" /> | 1. **Name:** TB6612FNG Dual Motor Driver<br><br>2. **Type:** Dual H-Bridge motor driver<br><br>3. **Channels:** 2<br><br>4. **Control:** PWM speed control<br><br>5. **Use:** DC motor control |
 
-The YDLidar T-Mini Plus provides distance measurements around the robot for wall following and collision avoidance, while the camera provides visual information for detecting and avoiding coloured obstacles.
+The **TB6612FNG** is used to control the robot's DC motors. It allows the ESP32 to control the **direction and speed** of the motors using PWM signals.
 
-The PCA9685 PWM driver controls the MG996 steering servo, while the TB6612FNG motor driver controls the N20 drive motors.
+---
 
-### Security Measures
+### GY-87 10-DOF Multi-Sensor IMU Module
 
-#### Current Stabilisation
+**GY-87 10-DOF Multi-Sensor IMU Module:**
 
-The robot uses DC-DC buck converters to regulate the voltage supplied to its electronic components. This prevents the higher battery voltage from being supplied directly to components that require lower operating voltages.
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="GY-87 IMU Module" src="https://github.com/user-attachments/assets/06444ccd-9718-44a6-9ecc-b5ebb76ae830" /> | 1. **Name:** GY-87 10-DOF IMU Module<br><br>2. **Sensors:** Accelerometer, gyroscope, magnetometer and barometer<br><br>3. **Interface:** I²C<br><br>4. **Degrees of Freedom:** 10-DOF<br><br>5. **Use:** Motion and orientation sensing |
 
-The regulated power system helps maintain stable operation of the Raspberry Pi, ESP32, sensors, and control electronics during operation.
+The **GY-87 IMU** provides information about the robot's movement and orientation. It can be used to monitor **rotation, acceleration, and changes in orientation** during navigation.
 
-## Obstacle Management
+---
 
-The robot uses a combination of computer vision, LiDAR, and IMU data to detect obstacles and determine its path through the arena.
+### Silicon Labs CP2102 USB-to-UART Bridge
 
-### Vision Methods and Decision Making
+**Silicon Labs CP2102 USB-to-UART Bridge:**
 
-<img width="512" height="738" alt="Untitled design" src="https://github.com/user-attachments/assets/be3c91f0-76a1-4819-b356-44395aad8dc6" />
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="CP2102 USB-to-UART Bridge" src="https://github.com/user-attachments/assets/51b86460-cb8d-4ee2-b4d7-cae04b5f1223" /> | 1. **Name:** CP2102 USB-to-UART Bridge<br><br>2. **Type:** USB-to-UART converter<br><br>3. **Interface:** USB / UART<br><br>4. **Use:** Serial communication<br><br>5. **Application:** Programming and debugging |
 
-The Raspberry Pi Camera Module 3 Wide is used to identify the coloured obstacles in the arena. Image processing is used to detect red and green obstacles and determine their position relative to the robot.
+The **CP2102** is used as a USB-to-UART interface for communication with the microcontroller and for **programming, debugging, and serial communication**.
 
-The YDLidar T-Mini Plus provides distance measurements around the robot. These measurements are used for wall following, obstacle detection, and determining the available space around the robot.
+---
 
-The GY-87 IMU provides accelerometer and gyroscope data. Gyroscope yaw data is used by the navigation software for heading correction, cornering, and lane re-centering after obstacle avoidance.
+### HC-SR04 Ultrasonic Sensor
 
-The navigation system combines information from these sensors to determine the appropriate steering angle and motor speed. The Raspberry Pi processes the sensor data and sends movement commands to the ESP32, which controls the steering servo and drive motors.
+**HC-SR04 Ultrasonic Sensor:**
 
-### 1) Image Pipeline (Inputs Used by Algorithms)
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="HC-SR04 Ultrasonic Sensor" src="https://github.com/user-attachments/assets/6b3e06b6-78e6-4789-aa50-27cb1e9129cb" /> | 1. **Name:** HC-SR04 Ultrasonic Sensor<br><br>2. **Type:** Ultrasonic distance sensor<br><br>3. **Operating Voltage:** 5 V<br><br>4. **Interface:** Trigger and Echo<br><br>5. **Use:** Distance measurement |
 
-<img width="444" height="250" alt="Untitled design-2-2" src="https://github.com/user-attachments/assets/d5c46602-b48c-4c1b-8e20-0aed8f2d05d7" />
+The **HC-SR04** measures distance using ultrasonic waves. It can provide an additional proximity measurement for detecting objects near the robot.
 
-**Obstacle Detection Algorithm**
+---
 
-The camera captures images of the arena, which are processed on the Raspberry Pi.
+### MG996 Servo Motor
 
-The image-processing pipeline consists of:
-1. Capturing an image from the camera.
-2. Converting the image into a HSV colour space.
-3. Segmenting the track.
-4. Detecting the relevant coloured regions.
-5. Identifying red and green obstacles.
-6. Determining the position of detected obstacles.
-7. Passing the resulting information to the navigation algorithm.
+**MG996 Servo Motor:**
 
-### 2) Wall Following Calculations
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="MG996 Servo Motor" src="https://github.com/user-attachments/assets/4e8ed4f9-2cff-482b-ac7c-e2f42677f6e7" /> | 1. **Name:** MG996 Servo Motor<br><br>2. **Type:** Digital servo motor<br><br>3. **Control:** PWM<br><br>4. **Rotation:** Approximately 180°<br><br>5. **Use:** Steering control |
 
-LiDAR measurements are used to determine the robot's distance from the walls.
+The **MG996 Servo Motor** is used to control the robot's steering mechanism. Its position is controlled using PWM signals generated through the **PCA9685 servo driver**.
 
-The navigation algorithm compares the measured distance with the desired wall distance and calculates a steering correction. This allows the robot to maintain a suitable position within the lane while moving around the arena.
+---
 
-### 3) Obstacle Handling Calculations
+### N20 200 RPM Gear Motors
 
-The robot uses the Raspberry Pi Camera Module 3 Wide to detect the track and coloured obstacles. The image-processing pipeline consists of several stages:
+**N20 200 RPM Gear Motors:**
 
-1. **Image acquisition:** The camera captures the complete view in front of the robot.
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="N20 Gear Motors" src="https://github.com/user-attachments/assets/79ed59ec-01e8-4c4c-be57-d74fc5afe898" /> | 1. **Name:** N20 DC Gear Motor<br><br>2. **Quantity:** 2<br><br>3. **Speed:** Approximately 200 RPM<br><br>4. **Type:** DC geared motor<br><br>5. **Use:** Propulsion |
 
-2. **Track masking:** A mask is applied to identify the drivable track region. Geometric conditions are used to filter the detected region, including requirements for the region to reach the bottom of the image. This helps identify the area of the track that is relevant to the robot's current position.
+Following an evaluation of different motors, we selected the **N20 200 RPM Gear Motors** for propulsion. Their compact size and geared design provide suitable torque while keeping the robot lightweight. The motors are connected to the **TB6612FNG motor driver** for speed and direction control.
 
-3. **Obstacle detection:** Potential obstacles are detected within the camera image using geometric and colour-based conditions. Conditions such as the obstacle's height, width, position, and relationship with the track are used to filter detections and produce an obstacle mask.
+---
 
-4. **Obstacle localisation:** Once an obstacle is detected, its size and image coordinates are extracted. These measurements are used to estimate its position and distance relative to the robot.
+### LiPo 3S 11.1V 2200mAh Battery
 
-5. **Steering calculation:** The detected obstacle position is used to determine the required steering response. PID controllers are used to adjust the steering based on the calculated error.
+**LiPo 3S 11.1V 2200mAh Battery:**
 
-6. **Parameter tuning:** HSV and LAB colour thresholds and PID parameters are tuned experimentally through repeated testing. The Flask-based tuning interface allows vision parameters to be adjusted during testing without repeatedly changing the main source code.
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="LiPo 3S 11.1V 2200mAh Battery" src="https://github.com/user-attachments/assets/975ba1bc-026f-4a03-b727-340d5b2d7c12" /> | 1. **Name:** LiPo 3S Battery<br><br>2. **Nominal Voltage:** 11.1 V<br><br>3. **Capacity:** 2200 mAh<br><br>4. **Cell Count:** 3S<br><br>5. **Use:** Main power source |
 
-### 4) Crash Detection
+The **3S LiPo battery** serves as the primary power source for the robot. Its relatively high energy density allows it to power the motors and electronic systems while maintaining a compact form factor.
 
-The LiDAR is used to detect imminent collisions by monitoring the distance in the forward region of the robot. When an obstacle is detected within the defined safety threshold, collision avoidance is given priority over normal navigation.
+---
 
-The navigation system determines an escape direction based on the available space and temporarily overrides the normal steering behaviour to avoid the collision.
+### LM2596 Step-Down Buck Converter
 
-### 5) Arbitration: Choosing the Action
+**LM2596 Step-Down Buck Converter:**
 
-<img width="512" height="738" alt="ChatGPT Image Aug 22, 2026 at 11_03_22 AM" src="https://github.com/user-attachments/assets/2a74648f-89eb-4ce7-b8eb-18902a376492" />
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="LM2596 Buck Converter" src="https://github.com/user-attachments/assets/3a850fdf-1e0b-4753-a041-a333159d0240" /> | 1. **Name:** LM2596 Step-Down Converter<br><br>2. **Type:** DC-DC buck converter<br><br>3. **Input:** Higher DC voltage<br><br>4. **Output:** Adjustable lower DC voltage<br><br>5. **Use:** ESP32 power regulation |
 
-The navigation system uses a priority-based arbitration system to determine which behaviour should control the robot at any given moment. Higher-priority behaviours override lower-priority behaviours when multiple conditions are detected simultaneously.
+The **LM2596 buck converter** reduces the battery voltage to a suitable regulated voltage for the **ESP32 and associated electronics**. This provides a more appropriate supply voltage while improving power efficiency.
 
-The behaviour hierarchy is:
+---
 
-**Imminent collision avoidance**: Highest priority. If a collision is detected as imminent by the LiDAR, the robot immediately performs an escape manoeuvre.
+### XY-3606 DC-DC Step-Down Buck Converter
 
-**Corner turning**: A committed corner-turning manoeuvre takes priority over normal obstacle avoidance and wall following. It is interrupted only by an imminent collision.
+**XY-3606 DC-DC Step-Down Buck Converter:**
 
-**Side obstacle avoidance**: LiDAR side-proximity warnings override camera-based pillar avoidance when the robot is too close to a side wall.
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="XY-3606 Buck Converter" src="https://github.com/user-attachments/assets/8af8d885-89c7-4b68-9acc-c355d38f7582" /> | 1. **Name:** XY-3606 DC-DC Buck Converter<br><br>2. **Type:** Step-down voltage regulator<br><br>3. **Input:** Higher DC voltage<br><br>4. **Output:** Adjustable lower DC voltage<br><br>5. **Use:** Raspberry Pi power regulation |
 
-**Camera obstacle avoidance**: Red and green obstacles detected using computer vision generate a steering response.
+The **XY-3606 buck converter** is used to regulate the battery voltage to a suitable level for powering the **Raspberry Pi 5**. This allows the computing system to receive a stable power supply from the main battery.
 
-**LiDAR wall following**: When no higher-priority behaviour is active, the robot follows the wall using LiDAR measurements and PID control.
+---
 
-**Fallback**: If none of the above behaviours can provide a valid navigation command, the robot continues straight at the cruise speed.
+### RC Car Rear Differential
 
-This hierarchy prevents conflicting behaviours from simultaneously controlling the steering system and ensures that immediate safety conditions take precedence over normal navigation.
+**RC Car Rear Differential:**
 
-### 6) Tuning Notes
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="RC Car Rear Differential" src="https://github.com/user-attachments/assets/783b6d71-c0a7-4619-8c8f-c254a46ddcd5" /> | 1. **Name:** RC Car Rear Differential<br><br>2. **Type:** Mechanical differential<br><br>3. **Use:** Power distribution to rear wheels<br><br>4. **Application:** Rear-wheel drive system |
 
-The steering and navigation parameters are tuned through repeated testing on the arena. Parameters such as steering corrections, motor speed, wall-following distance, and obstacle detection thresholds are adjusted to improve stability and reduce unnecessary corrections. Colour parameters for obstacles can be tuned using an HSV adjuster on a Flask interface while the robot is running.
+The **RC Car Rear Differential** transfers power from the motors to the rear wheels while allowing the wheels to rotate at different speeds when turning. This improves the robot's ability to negotiate corners smoothly.
 
-### Block Diagrams
-#### Open Round Block Diagrams
+---
 
+### N20 Wheels
 
-#### Obstacle Round Diagrams
-![Obstacle Round Logic](md/obstacle_round_diagram.png)
+**N20 Wheels:**
 
-##### Others 
-Corner Logic 
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="N20 Wheels" src="https://github.com/user-attachments/assets/e54c118c-2956-4393-8d43-4b2afd229bf5" /> | 1. **Name:** N20 Wheels<br><br>2. **Quantity:** 4<br><br>3. **Type:** Robot/RC wheels<br><br>4. **Compatibility:** N20 gear motors<br><br>5. **Use:** Ground contact and propulsion |
 
+The **N20 wheels** provide the robot with traction and allow the motor torque to be transferred to the track surface. Four wheels are used to provide stable contact with the ground.
+
+---
+
+### Lazy Susan Turntable Bearings
+
+**Lazy Susan Turntable Bearings:**
+
+| **Component Image** | **Specifications** |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="100" height="100" alt="Lazy Susan Turntable Bearing" src="https://github.com/user-attachments/assets/236d9dd5-82f3-4874-a29f-3ce52fc81cbf" /> | 1. **Name:** Lazy Susan Turntable Bearing<br><br>2. **Type:** Rotational bearing<br><br>3. **Use:** Low-friction rotation<br><br>4. **Application:** Mechanical support<br><br>5. **Function:** Allows smooth rotational movement |
+
+The **Lazy Susan turntable bearing** is used as a mechanical support component to allow smooth rotational movement while reducing friction. It contributes to the mechanical stability and movement of the robot.
