@@ -4,9 +4,9 @@
 
 | **Component Image** | **Specifications** |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <img width="100" height="66.56" alt="Raspberry Pi 5" src="https://github.com/user-attachments/assets/e4878e2a-ee42-4cbb-9076-6eee5a91137b" /> | 1. **Name:** Raspberry Pi 5<br><br>2. **Processor:** Quad-core 64-bit Arm Cortex-A76<br><br>3. **Memory:** 8 GB RAM<br><br>4. **Storage:** MicroSD Card<br><br>5. **Cooling:** Active cooling fan |
+| <img width="100" height="66.56" alt="Raspberry Pi 5" src="https://github.com/user-attachments/assets/e4878e2a-ee42-4cbb-9076-6eee5a91137b" /> | 1. **Name:** Raspberry Pi 5<br><br>2. **Processor:** Quad-core 64-bit Arm Cortex-A76<br><br>3. **Storage:** MicroSD Card<br><br>4. **Cooling:** Active cooling fan<br><br>5. **Use:** Main processing and navigation |
 
-The **Raspberry Pi 5** serves as the primary processing unit of the robot. It handles computationally intensive tasks such as **computer vision, sensor processing, decision-making, and navigation**. An active cooling fan is used to maintain stable temperatures during continuous operation.
+The **Raspberry Pi 5** acts as the brain of the robot. It processes the camera and LiDAR data, runs the computer vision and navigation algorithms, makes movement decisions, and sends the resulting commands to the **ESP32**. The ESP32 then handles the low-level motor and actuator control.
 
 ---
 
@@ -28,9 +28,9 @@ The **Raspberry Pi Camera Module 3 Wide** provides visual input to the robot. It
 
 | **Component Image** | **Specifications** |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <img width="100" height="100" alt="ESP32 Development Board" src="https://github.com/user-attachments/assets/d5deb83d-41c4-404e-a340-20d3ba21cfaf" /> | 1. **Name:** ESP32 Development Board<br><br>2. **Microcontroller:** ESP32<br><br>3. **Communication:** Serial communication<br><br>4. **Use:** Motor and actuator control |
+| <img width="100" height="100" alt="ESP32 Development Board" src="https://github.com/user-attachments/assets/d5deb83d-41c4-404e-a340-20d3ba21cfaf" /> | 1. **Name:** ESP32 Development Board<br><br>2. **Type:** Microcontroller<br><br>3. **Communication:** Serial communication with Raspberry Pi 5<br><br>4. **Use:** Motor and actuator control |
 
-The **ESP32 Development Board** acts as the low-level controller of the robot. It receives commands from the Raspberry Pi and controls the motors and other actuators, allowing the high-level navigation system to communicate with the hardware efficiently.
+The **ESP32** acts as the robot's low-level motor controller. It receives movement commands from the **Raspberry Pi 5**, which performs the main vision, sensor processing, decision-making, and navigation. The ESP32 converts these commands into control signals for the **motor driver and steering servo**, allowing the robot to physically execute the decisions made by the Raspberry Pi.
 
 ---
 
