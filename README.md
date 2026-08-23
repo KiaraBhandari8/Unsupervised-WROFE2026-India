@@ -110,6 +110,19 @@ The two N20 gear motors are controlled by the ESP32 through the TB6612FNG dual m
 
 - **3D Printing Parts**<br>
   Using any 3D printer, start by 3D printing the necessary parts for the assembly. We used a Prusa Core 1. Every part needed has a STL file which you can use with any printer. If you're adventurous and want to modify a part, open the .STL file in your favorite CAD software. If you're unsure of what part you're printing, make sure to open the PNG file which contains a picture of the part.<br>
+[Click here to open the .STL files](mech)
+
+- **Custom PCB**<br>
+  Fabricate the board using the Gerber files located in the project repository. Carefully solder all components onto the PCB, including power regulators, motor drivers, and pin headers. Before connecting battery power, perform a continuity test with a multimeter across the power and ground rails to ensure there are no short circuits.<br>
+[Click here to open the schematics](mech)
+
+- **Assemble the Robot**<br>
+  Mechanically assembling the robot is quite straight-forward. The tricky part comes with the electrical connections. Make sure you follow correctly the following electrical drawings.<br>
+_Take notes, the drawings are quite small ! Make sure to download the PDF files to be able to zoom._ <br>
+[Click here to open the electrical drawings](mech)
+
+- **Sensor Setup (LiDAR & Pi Camera)** <br>
+  Secure the Pi Camera and LiDAR module onto their designated 3D-printed chassis mounts. Connect the camera to the host board's CSI port using the ribbon cable, ensuring correct pin orientation. Wire the LiDAR module to the host via USB or serial interface. Run the hardware verification scripts to verify the camera stream and confirm that 360-degree scan data is streaming cleanly into memory.<br>
 
 
 ## Power & Sense Management
