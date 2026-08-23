@@ -159,11 +159,16 @@ The image-processing pipeline consists of:
 6. Determining the position of detected obstacles.
 7. Passing the resulting information to the navigation algorithm.
 
+
 ### 2) Wall Following Calculations
 
 LiDAR measurements are used to determine the robot's distance from the walls.
 
 The navigation algorithm compares the measured distance with the desired wall distance and calculates a steering correction. This allows the robot to maintain a suitable position within the lane while moving around the arena.
+
+- Multi-Ray Sampling: Pulls depth readings from key positions in the scan array: straight left ($-90^\circ$), straight right ($+90^\circ$), and front diagonals ($\pm 45^\circ$).  
+- Heading & Alignment: Calculates lateral offset by subtracting right distance from left distance, while diagonal rays determine the robot's tilt angle relative to parallel track walls.
+- PD Control Loop: Feeds distance error ($P$) and rate of drift ($D$) into a Proportional-Derivative steering controller to keep the robot smoothly centered in the lane.
 
 ### 3) Obstacle Handling Calculations
 
@@ -181,13 +186,22 @@ The robot uses the Raspberry Pi Camera Module 3 Wide to detect the track and col
 
 6. **Parameter tuning:** HSV and LAB colour thresholds and PID parameters are tuned experimentally through repeated testing. The Flask-based tuning interface allows vision parameters to be adjusted during testing without repeatedly changing the main source code.
 
-### 4) Crash Detection
+### 4) Corner Detection
+- Pattern Recognition: Detects turn entry when diagonal depth rays suddenly spike outward (wall disappears) while front distance readings shrink.
+- Snapshot Retrieval: Uses SharedScanReader to capture a frozen snapshot of the 361-slot distance array.
+- Arc Execution: Suspends standard wall-following and hands steering authority to execute_cornering(), which runs a pre-calculated turning arc until side walls reappear.  
+
+### 5) Crash Detection
 
 The LiDAR is used to detect imminent collisions by monitoring the distance in the forward region of the robot. When an obstacle is detected within the defined safety threshold, collision avoidance is given priority over normal navigation.
 
 The navigation system determines an escape direction based on the available space and temporarily overrides the normal steering behaviour to avoid the collision.
 
-### 5) Arbitration: Choosing the Action
+- Proximity Guard: Scans a $30^\circ$ forward wedge (indices $-15^\circ$ to $+15^\circ$) in the scan buffer, triggering an emergency stop if any value drops below $0.12\text{m}$.
+- Stall Guard: Monitors wheel encoder tick rates against motor throttle commands. Flags a crash if throttle is active but wheel rotation halts for over 200ms.
+- Emergency Intervention: Instantly overrides all routines to cut forward throttle, trigger reverse power, and steer away from the obstacle.
+
+### 6) Arbitration: Choosing the Action
 
 <img width="512" height="738" alt="ChatGPT Image Aug 22, 2026 at 11_03_22 AM" src="https://github.com/user-attachments/assets/2a74648f-89eb-4ce7-b8eb-18902a376492" />
 
@@ -209,7 +223,7 @@ The behaviour hierarchy is:
 
 This hierarchy prevents conflicting behaviours from simultaneously controlling the steering system and ensures that immediate safety conditions take precedence over normal navigation.
 
-### 6) Tuning Notes
+### 7) Tuning Notes
 
 The steering and navigation parameters are tuned through repeated testing on the arena. Parameters such as steering corrections, motor speed, wall-following distance, and obstacle detection thresholds are adjusted to improve stability and reduce unnecessary corrections. Colour parameters for obstacles can be tuned using an HSV adjuster on a Flask interface while the robot is running.
 
