@@ -100,7 +100,7 @@ The robot uses a rear-wheel-drive system consisting of two N20 200 RPM gear moto
 
 ### Controlling the Motors
 
-<img src="md/mobility diagram.jpeg" alt="Front View">
+<img src="md/mobility diagram.jpeg">
 
 The two N20 gear motors are controlled by the ESP32 through the TB6612FNG dual motor driver. The Raspberry Pi sends movement commands to the ESP32, which controls the motors according to the required speed and direction. The MG996 steering servo is controlled by the ESP32 through the PCA9685 PWM servo driver.
 
@@ -133,7 +133,7 @@ The robot is powered by a LiPo 3S 11.1 V 2200 mAh battery. DC-DC buck converters
 
 ### Hardware Architecture
 
-<img src="md/diagram.jpeg" alt="Front View">
+<img src="md/diagram.jpeg">
 
 The Raspberry Pi 5 acts as the main computing unit and processes data from the Raspberry Pi Camera Module 3 Wide and YDLidar T-Mini Plus LiDAR. The Raspberry Pi communicates with the ESP32 through a serial connection to send movement and steering commands.
 
@@ -196,6 +196,8 @@ The navigation algorithm compares the measured distance with the desired wall di
 - PD Control Loop: Feeds distance error ($P$) and rate of drift ($D$) into a Proportional-Derivative steering controller to keep the robot smoothly centered in the lane.
 
 ### 3) Obstacle Handling Calculations
+
+<img src="md/obstacle_handline.jpeg">
 
 The robot uses the Raspberry Pi Camera Module 3 Wide to detect the track and coloured obstacles. The image-processing pipeline consists of several stages:
 
