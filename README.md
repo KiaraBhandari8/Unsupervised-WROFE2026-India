@@ -153,8 +153,6 @@ The YDLidar T-Mini Plus provides distance measurements around the robot for wall
 
 The PCA9685 PWM driver controls the MG996 steering servo, while the TB6612FNG motor driver controls the N20 drive motors.
 
-### Security Measures
-
 #### Current Stabilisation
 
 The robot uses DC-DC buck converters to regulate the voltage supplied to its electronic components. This prevents the higher battery voltage from being supplied directly to components that require lower operating voltages.
@@ -185,6 +183,11 @@ The navigation system combines information from these sensors to determine the a
 
 The camera captures images of the arena, which are processed on the Raspberry Pi.
 
+<img width="2000" height="1414" alt="1" src="https://github.com/user-attachments/assets/8935a921-8698-499d-b142-c46658fe8dcd" />
+
+<img width="2000" height="1414" alt="2" src="https://github.com/user-attachments/assets/edc4174c-c3c8-4de0-90a3-61cd61d0c429" /> <br>
+
+
 The image-processing pipeline consists of:
 1. Capturing an image from the camera.
 2. Converting the image into a HSV colour space.
@@ -193,6 +196,8 @@ The image-processing pipeline consists of:
 5. Identifying red and green obstacles.
 6. Determining the position of detected obstacles.
 7. Passing the resulting information to the navigation algorithm.
+
+
 
 
 ### 2) Wall Following Calculations
