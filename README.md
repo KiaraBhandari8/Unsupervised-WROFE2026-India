@@ -272,5 +272,9 @@ The steering and navigation parameters are tuned through repeated testing on the
 ![Obstacle Round Logic](md/obstacle_round_diagram.png)
 
 ##### Others 
-Corner Logic 
+**Corner Logic Open Round**
+![Open Round Lap Count Logic](md/lap_open_round.png)
+
+**Corner Logic Obstacle Round**
+![Obstacle Round Lap Count Logic](md/obs_round_lap.png)
 
