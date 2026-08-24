@@ -13,6 +13,7 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
   - [Robot Pictures](#robot-pictures)
   - [Mobility Management](#mobility-management)
     - [Controlling the Motors](#controlling-the-motors)
+    - [Robot Dimensions](#robot-dimensions)
   - [Building Instructions](#building-instructions)
   - [Power & Sense Management](#power--sense-management)
     - [Hardware Architecture](#hardware-architecture)
@@ -97,6 +98,15 @@ The challenge requires students to construct an autonomous robot which will unde
 The robot uses a rear-wheel-drive system consisting of two N20 200 RPM gear motors connected to an RC car rear differential. The differential transfers the motors' motion to the rear wheels while allowing the wheels to rotate at different speeds during turns. Steering is provided by an MG996 servo motor connected to the front steering mechanism. The robot uses four N20 wheels, with the rear wheels being driven and the front wheels used for steering. A Lazy Susan turntable bearing supports the steering assembly.
 
 <img width="500" height="500" alt="WhatsApp Image 2026-08-18 at 6 07 51 PM" src="https://github.com/user-attachments/assets/eb0bfc8a-20ac-4862-9531-c909dcd38ae6" />
+
+### Robot Dimensions
+
+**Dimensions:** **50 cm × 29.5 cm × 22 cm**  
+**Length × Width × Height**
+
+**Why We Chose These Dimensions:**
+
+We chose the dimensions of **50 cm × 29.5 cm × 22 cm** to provide a balance between **stability, manoeuvrability, and component placement**. The 50 cm length provides enough space to accommodate the drivetrain, battery, electronics, and sensors while maintaining a compact overall design. The 29.5 cm width provides sufficient stability during movement and turning without making the robot unnecessarily wide. The 22 cm height keeps the robot's centre of mass relatively low while providing enough clearance for mounting the camera, LiDAR, and other electronic components. These dimensions also allow the robot to remain compact enough for efficient navigation around the track.
 
 ### Controlling the Motors
 
