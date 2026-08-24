@@ -101,18 +101,24 @@ The robot uses a rear-wheel-drive system consisting of two N20 200 RPM gear moto
 
 ### Robot Dimensions
 
-**Dimensions:** **50 cm × 29.5 cm × 22 cm**  
+- **Dimensions:** **50 cm × 29.5 cm × 22 cm**  
 **Length × Width × Height**
 
 **Why We Chose These Dimensions:**
 
 We chose the dimensions of **50 cm × 29.5 cm × 22 cm** to provide a balance between **stability, manoeuvrability, and component placement**. The 50 cm length provides enough space to accommodate the drivetrain, battery, electronics, and sensors while maintaining a compact overall design. The 29.5 cm width provides sufficient stability during movement and turning without making the robot unnecessarily wide. The 22 cm height keeps the robot's centre of mass relatively low while providing enough clearance for mounting the camera, LiDAR, and other electronic components. These dimensions also allow the robot to remain compact enough for efficient navigation around the track.
 
+- **Custom Mounts**: Holders for servo, differential gear, camera, and LiDAR and more. <br> [CAD Designs](mech)
+
+- **Differential Gear**: The differential  provides smoother and more mechanically appropriate turning behaviour than directly forcing both wheels to rotate at the same speed. <br> [Why We Chose Differential Gears](mech/components)
+
 ### Controlling the Motors
 
 <img src="md/mobility diagram.jpeg">
 
 The two N20 gear motors are controlled by the ESP32 through the TB6612FNG dual motor driver. The Raspberry Pi sends movement commands to the ESP32, which controls the motors according to the required speed and direction. The MG996 steering servo is controlled by the ESP32 through the PCA9685 PWM servo driver.
+
+This code showcases our navigation manoeuvre. You can go through this to get a better understanding. [Click here for navigation code](codes/aug15_1/nav_process.py)
 
 -------------------------------------------------------
 ## Building Instructions
@@ -145,13 +151,14 @@ The robot is powered by a LiPo 3S 11.1 V 2200 mAh battery. DC-DC buck converters
 
 <img src="md/diagram.jpeg">
 
-The Raspberry Pi 5 acts as the main computing unit and processes data from the Raspberry Pi Camera Module 3 Wide and YDLidar T-Mini Plus LiDAR. The Raspberry Pi communicates with the ESP32 through a serial connection to send movement and steering commands.
+The Raspberry Pi 5 acts as the main computing unit and processes data from the Raspberry Pi Camera Module 3 Wide and YDLidar T-Mini Plus LiDAR. The Raspberry Pi communicates with the ESP32 through a serial connection to send movement and steering commands. <br> [Why We Chose the Pi 5](mech/components)
 
-The ESP32 handles real-time motor and steering control and interfaces with the robot's sensors. The GY-87 10-DOF IMU provides accelerometer and gyroscope data to estimate the robot's orientation and heading. Gyroscope yaw data is streamed from the ESP32 to the Raspberry Pi and is used by the navigation software for heading correction, cornering, and lane re-centering after obstacle avoidance.
+The ESP32 handles real-time motor and steering control and interfaces with the robot's sensors. The GY-87 10-DOF IMU provides accelerometer and gyroscope data to estimate the robot's orientation and heading. Gyroscope yaw data is streamed from the ESP32 to the Raspberry Pi and is used by the navigation software for heading correction, cornering, and lane re-centering after obstacle avoidance. <br> [Why We Chose the ESP32](mech/components)
 
-The YDLidar T-Mini Plus provides distance measurements around the robot for wall following and collision avoidance, while the camera provides visual information for detecting and avoiding coloured obstacles.
+The YDLidar T-Mini Plus provides distance measurements around the robot for wall following and collision avoidance, while the camera provides visual information for detecting and avoiding coloured obstacles. <br> [Why We Chose the YDLiDAR](mech/components)
 
 The PCA9685 PWM driver controls the MG996 steering servo, while the TB6612FNG motor driver controls the N20 drive motors.
+
 
 #### Current Stabilisation
 
@@ -173,7 +180,7 @@ The YDLidar T-Mini Plus provides distance measurements around the robot. These m
 
 The GY-87 IMU provides accelerometer and gyroscope data. Gyroscope yaw data is used by the navigation software for heading correction, cornering, and lane re-centering after obstacle avoidance.
 
-The navigation system combines information from these sensors to determine the appropriate steering angle and motor speed. The Raspberry Pi processes the sensor data and sends movement commands to the ESP32, which controls the steering servo and drive motors.
+The navigation system combines information from these sensors to determine the appropriate steering angle and motor speed. The Raspberry Pi processes the sensor data and sends movement commands to the ESP32, which controls the steering servo and drive motors. 
 
 ### 1) Image Pipeline (Inputs Used by Algorithms)
 
@@ -185,8 +192,7 @@ The camera captures images of the arena, which are processed on the Raspberry Pi
 
 <img width="2000" height="1414" alt="1" src="https://github.com/user-attachments/assets/8935a921-8698-499d-b142-c46658fe8dcd" />
 
-<img width="2000" height="1414" alt="2" src="https://github.com/user-attachments/assets/edc4174c-c3c8-4de0-90a3-61cd61d0c429" /> <br>
-
+<img width="2000" height="1414" alt="2" src="https://github.com/user-attachments/assets/edc4174c-c3c8-4de0-90a3-61cd61d0c429" /> <br> See [Nav_Process.py](codes/aug15_1/nav_process.py) and [Vision_Process.py](codes/aug15_1/vision_process.py) <br>
 
 The image-processing pipeline consists of:
 1. Capturing an image from the camera.
@@ -198,8 +204,6 @@ The image-processing pipeline consists of:
 7. Passing the resulting information to the navigation algorithm.
 
 
-
-
 ### 2) Wall Following Calculations
 
 LiDAR measurements are used to determine the robot's distance from the walls.
@@ -208,7 +212,9 @@ The navigation algorithm compares the measured distance with the desired wall di
 
 - Multi-Ray Sampling: Pulls depth readings from key positions in the scan array: straight left ($-90^\circ$), straight right ($+90^\circ$), and front diagonals ($\pm 45^\circ$).  
 - Heading & Alignment: Calculates lateral offset by subtracting right distance from left distance, while diagonal rays determine the robot's tilt angle relative to parallel track walls.
-- PD Control Loop: Feeds distance error ($P$) and rate of drift ($D$) into a Proportional-Derivative steering controller to keep the robot smoothly centered in the lane.
+- PD Control Loop: Feeds distance error ($P$) and rate of drift ($D$) into a Proportional-Derivative steering controller to keep the robot smoothly centered in the lane. <br>
+
+Look at [Lidar_Process.py](codes/aug15_1/lidar_process.py) for more understanding
 
 ### 3) Obstacle Handling Calculations
 
