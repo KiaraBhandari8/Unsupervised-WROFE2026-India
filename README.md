@@ -266,7 +266,7 @@ The steering and navigation parameters are tuned through repeated testing on the
 
 ### Block Diagrams
 #### Open Round Block Diagrams
-
+![Open Round Logic](md/open_round_logic.png)
 
 #### Obstacle Round Diagrams
 ![Obstacle Round Logic](md/obstacle_round_diagram.png)
