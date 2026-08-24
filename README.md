@@ -13,6 +13,7 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
   - [Robot Pictures](#robot-pictures)
   - [Mobility Management](#mobility-management)
     - [Controlling the Motors](#controlling-the-motors)
+    - [Robot Dimensions](#robot-dimensions)
   - [Building Instructions](#building-instructions)
   - [Power & Sense Management](#power--sense-management)
     - [Hardware Architecture](#hardware-architecture)
@@ -98,7 +99,18 @@ The robot uses a rear-wheel-drive system consisting of two N20 200 RPM gear moto
 
 <img width="500" height="500" alt="WhatsApp Image 2026-08-18 at 6 07 51 PM" src="https://github.com/user-attachments/assets/eb0bfc8a-20ac-4862-9531-c909dcd38ae6" />
 
+### Robot Dimensions
+
+**Dimensions:** **50 cm × 29.5 cm × 22 cm**  
+**Length × Width × Height**
+
+**Why We Chose These Dimensions:**
+
+We chose the dimensions of **50 cm × 29.5 cm × 22 cm** to provide a balance between **stability, manoeuvrability, and component placement**. The 50 cm length provides enough space to accommodate the drivetrain, battery, electronics, and sensors while maintaining a compact overall design. The 29.5 cm width provides sufficient stability during movement and turning without making the robot unnecessarily wide. The 22 cm height keeps the robot's centre of mass relatively low while providing enough clearance for mounting the camera, LiDAR, and other electronic components. These dimensions also allow the robot to remain compact enough for efficient navigation around the track.
+
 ### Controlling the Motors
+
+<img src="md/mobility diagram.jpeg">
 
 The two N20 gear motors are controlled by the ESP32 through the TB6612FNG dual motor driver. The Raspberry Pi sends movement commands to the ESP32, which controls the motors according to the required speed and direction. The MG996 steering servo is controlled by the ESP32 through the PCA9685 PWM servo driver.
 
@@ -130,6 +142,8 @@ _Take notes, the drawings are quite small ! Make sure to download the PDF files 
 The robot is powered by a LiPo 3S 11.1 V 2200 mAh battery. DC-DC buck converters regulate the battery voltage to suitable levels for the Raspberry Pi 5 and ESP32. The regulated power supplies allow the computing, sensing, and control components to operate reliably.
 
 ### Hardware Architecture
+
+<img src="md/diagram.jpeg">
 
 The Raspberry Pi 5 acts as the main computing unit and processes data from the Raspberry Pi Camera Module 3 Wide and YDLidar T-Mini Plus LiDAR. The Raspberry Pi communicates with the ESP32 through a serial connection to send movement and steering commands.
 
@@ -193,6 +207,8 @@ The navigation algorithm compares the measured distance with the desired wall di
 
 ### 3) Obstacle Handling Calculations
 
+<img src="md/obstacle_handline.jpeg">
+
 The robot uses the Raspberry Pi Camera Module 3 Wide to detect the track and coloured obstacles. The image-processing pipeline consists of several stages:
 
 1. **Image acquisition:** The camera captures the complete view in front of the robot.
@@ -250,7 +266,7 @@ The steering and navigation parameters are tuned through repeated testing on the
 
 ### Block Diagrams
 #### Open Round Block Diagrams
-
+![Open Round Logic](md/open_round_logic.png)
 
 #### Obstacle Round Diagrams
 ![Obstacle Round Logic](md/obstacle_round_diagram.png)

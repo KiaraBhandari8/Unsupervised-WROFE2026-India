@@ -21,6 +21,12 @@ In our design, we changed the orientation of the differential gear to improve it
 This modification also makes the overall drivetrain more reliable by reducing unnecessary contact between components and providing better separation between the sensing and drive systems. The differential gear therefore contributes to both the robot’s turning performance and the improved mechanical layout of the final design.
 
 ##### 1.4 Dimension Choices 
+**Dimensions:** **50 cm × 29.5 cm × 22 cm**  
+**Length × Width × Height**
+
+**Why We Chose These Dimensions:**
+
+We chose the dimensions of **50 cm × 29.5 cm × 22 cm** to provide a balance between **stability, manoeuvrability, and component placement**. The 50 cm length provides enough space to accommodate the drivetrain, battery, electronics, and sensors while maintaining a compact overall design. The 29.5 cm width provides sufficient stability during movement and turning without making the robot unnecessarily wide. The 22 cm height keeps the robot's centre of mass relatively low while providing enough clearance for mounting the camera, LiDAR, and other electronic components. These dimensions also allow the robot to remain compact enough for efficient navigation around the track.
 
 ----------------------------------------------------------------------------------------
 ## 2. Structural Prototypes 
