@@ -100,6 +100,8 @@ The robot uses a rear-wheel-drive system consisting of two N20 200 RPM gear moto
 
 ### Controlling the Motors
 
+<img src="md/mobility diagram.jpeg" alt="Front View">
+
 The two N20 gear motors are controlled by the ESP32 through the TB6612FNG dual motor driver. The Raspberry Pi sends movement commands to the ESP32, which controls the motors according to the required speed and direction. The MG996 steering servo is controlled by the ESP32 through the PCA9685 PWM servo driver.
 
 -------------------------------------------------------
@@ -130,6 +132,8 @@ _Take notes, the drawings are quite small ! Make sure to download the PDF files 
 The robot is powered by a LiPo 3S 11.1 V 2200 mAh battery. DC-DC buck converters regulate the battery voltage to suitable levels for the Raspberry Pi 5 and ESP32. The regulated power supplies allow the computing, sensing, and control components to operate reliably.
 
 ### Hardware Architecture
+
+<img src="md/diagram.jpeg" alt="Front View">
 
 The Raspberry Pi 5 acts as the main computing unit and processes data from the Raspberry Pi Camera Module 3 Wide and YDLidar T-Mini Plus LiDAR. The Raspberry Pi communicates with the ESP32 through a serial connection to send movement and steering commands.
 
