@@ -17,20 +17,19 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
   - [Building Instructions](#building-instructions)
   - [Power & Sense Management](#power--sense-management)
     - [Hardware Architecture](#hardware-architecture)
-    - [Security Measures](#security-measures)
       - [Current Stabilisation](#current-stabilisation)
   - [Obstacle Management](#obstacle-management)
     - [Vision Methods and Decision Making](#vision-methods-and-decision-making)
     - [1) Image pipeline (inputs used by algorithms)](#1-image-pipeline-inputs-used-by-algorithms)
     - [2) Wall following calculations](#2-wall-following-calculations)
     - [3) Obstacle handling calculations](#3-obstacle-handling-calculations)
-    - [4) Crash detection](#4-crash-detection)
-    - [5) Arbitration: choosing the action](#5-arbitration-choosing-the-action)
-    - [6) Tuning notes](#6-tuning-notes)
+    - [4) Corner detection](#4-corner-detection)
+    - [5) Crash detection](#5-crash-detection)
+    - [6) Arbitration: choosing the action](#6-arbitration-choosing-the-action)
+    - [7) Tuning notes](#7-tuning-notes)
     - [Block diagrams](#block-diagrams)
-    - [Extras](#extras)
-  - [Software Key Components](#software-key-components)
   - [Possible Improvements](#possible-improvements)
+  - [Thank You](#thank-you)
 
 ## Team
 
@@ -282,10 +281,26 @@ The steering and navigation parameters are tuned through repeated testing on the
 #### Obstacle Round Diagrams
 ![Obstacle Round Logic](md/obstacle_round_diagram.png)
 
-##### Others 
-**Corner Logic Open Round**
+#### Corner Logic Open Round
 ![Open Round Lap Count Logic](md/lap_open_round.png)
 
-**Corner Logic Obstacle Round**
+#### Corner Logic Obstacle Round
 ![Obstacle Round Lap Count Logic](md/obs_round_lap.png)
 
+-------------------------------------------------------
+### Possible Improvements
+**1. Structural Reinforcement & Vibration Isolation**
+
+- Material Upgrade: Switch high-stress 3D-printed parts from standard PLA to PETG, ABS, or Carbon-Fiber PETG to stop chassis flex during sharp, high-speed maneuvers.
+
+- Vibration Dampening: Add TPU shock mounts or rubber grommets under the camera and LiDAR mounts. High-frequency motor vibrations introduce sensor noise into LiDAR distance scans and cause micro-blur in camera frames.
+
+**2. Hardware Acceleration for the Vision Pipeline**
+
+- Offloaded Processing: Move HSV color thresholding and contour tracking from the host CPU to a dedicated hardware accelerator (such as OpenCV GPU acceleration or a light Edge AI accelerator).
+
+- Latency Reduction: Cuts camera processing latency from ~30ms down to under 5ms. This allows the obstacle detection algorithm to feed target updates into shared memory significantly faster, enabling higher safe cruising speeds.
+-------------------------------------------------------
+### Thank You
+
+On behalf of Team Unsupervised, we want to extend our deepest gratitude to everyone who made this journey possible. A massive thank you to our incredible mentors — Vinay Sir, Vamsi Sir, and Abhay Sir — for your endless patience, technical guidance and for constantly pushing us to solve problems even when our code or hardware refused to cooperate. We are immensely grateful to the whole team at Makerworks Lab for giving us the space, tools, and encouraging environment to experiment, iterate, and bring our ideas to life. Finally, a special thank you to our parents, whose constant encouragement, belief in us, and behind-the-scenes support kept us going through every long hour. We truly couldn't have built any of this without your guidance, trust, and support!
