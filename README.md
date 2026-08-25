@@ -32,6 +32,8 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
   - [Thank You](#thank-you)
 
 ## Team
+<img width="4032" height="2268" alt="WhatsApp Image 2026-08-25 at 00 45 29" src="https://github.com/user-attachments/assets/49ed6802-0440-46f9-9aba-39b09cebed42" /> <br>
+
 
 | Name           | Profile                                | Role        |
 | -------------- | -------------------------------------- | ----------- |
@@ -304,3 +306,6 @@ The steering and navigation parameters are tuned through repeated testing on the
 ### Thank You
 
 On behalf of Team Unsupervised, we want to extend our deepest gratitude to everyone who made this journey possible. A massive thank you to our incredible mentors — Vinay Sir, Vamsi Sir, and Abhay Sir — for your endless patience, technical guidance and for constantly pushing us to solve problems even when our code or hardware refused to cooperate. We are immensely grateful to the whole team at Makerworks Lab for giving us the space, tools, and encouraging environment to experiment, iterate, and bring our ideas to life. Finally, a special thank you to our parents, whose constant encouragement, belief in us, and behind-the-scenes support kept us going through every long hour. We truly couldn't have built any of this without your guidance, trust, and support!
+
+<img width="4032" height="2268" alt="WhatsApp Image 2026-08-25 at 00 44 52" src="https://github.com/user-attachments/assets/810e58d1-9104-4c25-bd8a-22e01a09e545" />
+
