@@ -21,6 +21,11 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
   - [Obstacle Management](#obstacle-management)
     - [Vision Methods and Decision Making](#vision-methods-and-decision-making)
     - [1) Image pipeline (inputs used by algorithms)](#1-image-pipeline-inputs-used-by-algorithms)
+    - [MATLAB-Based Obstacle Detection and Colour Segmentation](#MATLAB-Based-Obstacle-Detection-and-Colour-Segmentation)
+        - [HSV-Based Colour Segmentation](#HSV-Based-Colour-Segmentation)
+        - [Generation of Colour Masks](Generation-of-Colour-Masks)
+        - [Obstacle Selection](#Obstacle-Selection)
+        - [Engineering Significance](#Engineering-Significance)
     - [2) Wall following calculations](#2-wall-following-calculations)
     - [3) Obstacle handling calculations](#3-obstacle-handling-calculations)
     - [4) Corner detection](#4-corner-detection)
@@ -204,6 +209,91 @@ The image-processing pipeline consists of:
 6. Determining the position of detected obstacles.
 7. Passing the resulting information to the navigation algorithm.
 
+### MATLAB-Based Obstacle Detection and Colour Segmentation
+A key challenge in autonomous navigation is converting the visual information captured by the camera into information that the robot can use to make decisions. The raw camera image contains the complete environment, including the track, obstacles, boundaries and surrounding background. Processing this entire image directly would introduce unnecessary visual information and make reliable obstacle identification more difficult.
+
+To address this, we developed a colour-based image-segmentation approach using MATLAB. MATLAB was used to analyse camera images and investigate how the coloured obstacles could be isolated from the surrounding environment. The segmentation process converts the original image into a simplified representation in which pixels corresponding to relevant obstacle colours are identified and separated from the background.
+
+Our implementation uses the HSV colour space rather than directly thresholding the RGB image. HSV separates colour information into Hue, Saturation and Value components, allowing the colour characteristics of the obstacles to be analysed independently from the overall image representation.
+
+The developed system specifically analyses the colour characteristics associated with the obstacles and generates separate segmentation masks for the detected colours. These masks are then filtered to remove insignificant regions before the remaining regions are used for obstacle identification.
+
+The overall process can be represented as:
+
+**Camera Image → RGB-to-HSV Conversion → Colour Thresholding → Binary Masks → Region Filtering → Obstacle Identification → Navigation Decision**
+
+This process significantly reduces the complexity of the visual input available to the navigation system. Instead of processing every element of the camera image equally, the algorithm extracts the visual information that is directly relevant to obstacle detection.
+
+<img width="1470" height="956" alt="Screenshot 2026-09-06 at 8 28 53 PM" src="https://github.com/user-attachments/assets/7f3795c3-cc71-4880-b6da-8aa3d06e0409" />
+
+MATLAB-based obstacle segmentation pipeline. The original camera image is converted into colour-specific segmentation masks. The red and green masks isolate pixels belonging to the corresponding obstacle colours, while the segmented overlay visualises the regions identified by the algorithm. The selected obstacle is subsequently highlighted for use in the navigation process.
+
+**MATLAB obstacle-perception pipeline: raw image → colour segmentation → filtered candidate regions → obstacle identification** 
+
+<img width="1000" height="708" alt="Copy of obstacle details" src="https://github.com/user-attachments/assets/d14e190c-4854-4d8c-bb6d-fee0daf5090b" />
+
+#### HSV-Based Colour Segmentation
+
+The RGB camera image is converted into HSV representation before segmentation. This allows the algorithm to define thresholds using Hue, Saturation and Value rather than relying directly on the three RGB intensity channels.
+
+For each target obstacle colour, a range of acceptable HSV values is defined. A pixel is classified as belonging to the target colour only when its HSV components fall within the specified ranges.
+
+This can be represented conceptually as:
+
+$$
+H_{\min} \leq H(x,y) \leq H_{\max}
+$$
+
+$$
+S_{\min} \leq S(x,y) \leq S_{\max}
+$$
+
+$$
+V_{\min} \leq V(x,y) \leq V_{\max}
+$$
+
+Pixels satisfying these conditions are assigned to the corresponding binary mask.
+
+An important implementation detail was the treatment of red. Because red lies around the boundary of the Hue scale, it cannot always be represented effectively using one continuous Hue interval. Therefore, the implementation uses two red Hue ranges, which are subsequently combined into a single red mask.
+
+This prevents valid red pixels from being incorrectly excluded simply because they occur on opposite sides of the Hue representation boundary.
+
+#### Generation of Colour Masks
+Separate binary masks are generated for the detected obstacle colours. In the resulting masks, pixels satisfying the selected colour criteria are represented as foreground pixels, while pixels that do not satisfy the criteria are rejected.
+
+The resulting masks provide a substantially simpler representation of the environment than the original camera image. For example, the red mask contains only the regions identified as red, while the green mask contains only the regions identified as green.
+
+This separation allows subsequent processing to operate on specific candidate obstacle regions rather than the complete camera frame.
+
+The segmentation output therefore acts as an interface between raw visual perception and geometric obstacle detection.
+
+<img width="663" height="279" alt="Screenshot 2026-09-08 at 8 03 03 PM" src="https://github.com/user-attachments/assets/292bb9f3-784a-44d1-989b-51b37058b00c" />
+
+#### Obstacle Selection
+
+Following segmentation and filtering, the detected regions can be evaluated as obstacle candidates. The visual overlay provides a direct representation of which region has been identified by the algorithm as the relevant obstacle.
+
+In the demonstrated test image, the algorithm successfully isolates the coloured obstacle from the surrounding environment and identifies the corresponding region as the obstacle candidate.
+
+This is an important transition in the perception pipeline: the algorithm moves from pixel-level classification to object-level interpretation.
+
+In other words:
+
+Pixel classification → Connected region → Obstacle candidate → Navigation information
+
+This extracted information can then be provided to the navigation system to influence the robot's movement and obstacle-avoidance behaviour.
+
+<img width="364" height="582" alt="Screenshot 2026-09-08 at 8 04 24 PM" src="https://github.com/user-attachments/assets/09d5a852-2376-4e68-8251-41aa8a191d43" />
+
+#### Engineering Significance
+
+The MATLAB segmentation process allowed us to reduce a high-dimensional camera image into a smaller set of meaningful visual features. Instead of treating the entire image as equally important, the algorithm selectively extracts regions corresponding to potential obstacles.
+
+This creates a structured perception pipeline in which colour information is converted into spatial information, and spatial information can subsequently be converted into navigation decisions.
+
+The significance of the approach is therefore not simply that an obstacle can be visually highlighted. The segmentation provides the foundation for enabling the robot to interpret its environment computationally and make autonomous decisions based on the detected obstacles.
+
+MATLAB was used for image-processing development, analysis and validation, while the resulting vision approach was integrated into the robot's deployed software architecture.
 
 ### 2) Wall Following Calculations
 

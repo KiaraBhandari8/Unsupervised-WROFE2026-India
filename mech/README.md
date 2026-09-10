@@ -27,3 +27,7 @@ This modification also makes the overall drivetrain more reliable by reducing un
 **Why We Chose These Dimensions:**
 
 We chose the dimensions of **50 cm × 29.5 cm × 22 cm** to provide a balance between **stability, manoeuvrability, and component placement**. The 50 cm length provides enough space to accommodate the drivetrain, battery, electronics, and sensors while maintaining a compact overall design. The 29.5 cm width provides sufficient stability during movement and turning without making the robot unnecessarily wide. The 22 cm height keeps the robot's centre of mass relatively low while providing enough clearance for mounting the camera, LiDAR, and other electronic components. These dimensions also allow the robot to remain compact enough for efficient navigation around the track.
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9a774df65b5be72951a36c2b13103f81c73873e5
