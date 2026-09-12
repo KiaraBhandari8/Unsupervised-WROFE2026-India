@@ -214,6 +214,8 @@ A key challenge in autonomous navigation is converting the visual information ca
 
 To address this, we developed a colour-based image-segmentation approach using MATLAB. MATLAB was used to analyse camera images and investigate how the coloured obstacles could be isolated from the surrounding environment. The segmentation process converts the original image into a simplified representation in which pixels corresponding to relevant obstacle colours are identified and separated from the background.
 
+<img width="1470" height="956" alt="Screenshot 2026-09-06 at 8 28 53 PM" src="https://github.com/user-attachments/assets/7f3795c3-cc71-4880-b6da-8aa3d06e0409" />
+
 Our implementation uses the HSV colour space rather than directly thresholding the RGB image. HSV separates colour information into Hue, Saturation and Value components, allowing the colour characteristics of the obstacles to be analysed independently from the overall image representation.
 
 The developed system specifically analyses the colour characteristics associated with the obstacles and generates separate segmentation masks for the detected colours. These masks are then filtered to remove insignificant regions before the remaining regions are used for obstacle identification.
@@ -223,8 +225,6 @@ The overall process can be represented as:
 **Camera Image → RGB-to-HSV Conversion → Colour Thresholding → Binary Masks → Region Filtering → Obstacle Identification → Navigation Decision**
 
 This process significantly reduces the complexity of the visual input available to the navigation system. Instead of processing every element of the camera image equally, the algorithm extracts the visual information that is directly relevant to obstacle detection.
-
-<img width="1470" height="956" alt="Screenshot 2026-09-06 at 8 28 53 PM" src="https://github.com/user-attachments/assets/7f3795c3-cc71-4880-b6da-8aa3d06e0409" />
 
 MATLAB-based obstacle segmentation pipeline. The original camera image is converted into colour-specific segmentation masks. The red and green masks isolate pixels belonging to the corresponding obstacle colours, while the segmented overlay visualises the regions identified by the algorithm. The selected obstacle is subsequently highlighted for use in the navigation process.
 
