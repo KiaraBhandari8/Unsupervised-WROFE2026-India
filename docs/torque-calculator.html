@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>WRO Drivetrain Torque Calculator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 30px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        .calculator {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .value {
+            font-weight: bold;
+        }
+
+        .formula {
+            text-align: center;
+            font-size: 28px;
+            padding: 25px 10px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .result {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            background: #eef2ff;
+        }
+
+        .result-number {
+            font-size: 42px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .unit {
+            color: #6b7280;
+        }
+
+        .bar-container {
+            margin-top: 25px;
+        }
+
+        .bar-background {
+            height: 25px;
+            background: #e5e7eb;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.2s ease;
+            border-radius: 20px;
+        }
+
+        .wheel {
+            width: 220px;
+            height: 220px;
+            border: 12px solid #374151;
+            border-radius: 50%;
+            margin: 30px auto;
+            position: relative;
+        }
+
+        .axle {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #111827;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .force-arrow {
+            position: absolute;
+            height: 6px;
+            background: #111827;
+            width: 90px;
+            right: -70px;
+            bottom: 20px;
+            transform: rotate(-25deg);
+            transform-origin: left center;
+        }
+
+        .force-arrow::after {
+            content: "";
+            position: absolute;
+            right: -5px;
+            top: -7px;
+            border-left: 15px solid #111827;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+
+        .equation-step {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f9fafb;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 750px) {
+            .calculator {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>WRO Drivetrain Torque Calculator</h1>
+
+    <p class="subtitle">
+        Interactive visualisation of torque, wheel force and drivetrain performance
+    </p>
+
+    <div class="calculator">
+
+        <!-- INPUTS -->
+        <div class="card">
+
+            <h2>Robot Parameters</h2>
+
+            <div class="input-group">
+                <div class="input-header">
+                    <span>Motor Torque</span>
+                    <span class="value">
+                        <span id="motorTorqueValue">0.52</span> kg·cm
+                    </span>
+                </div>
+
+                <input
+                    type="range"
+                    id="motorTorque"
+                    min="0.1"
+                    max="2"
+                    step="0.01"
+                    value="0.52"
+                >
+            </div>
+
+            <div class="input-group">
+                <div class="input-header">
+                    <span>Number of Motors</span>
+                    <span class="value" id="motorCountValue">2</span>
+                </div>
+
+                <input
+                    type="range"
+                    id="motorCount"
+                    min="1"
+                    max="4"
+                    step="1"
+                    value="2"
+                >
+            </div>
+
+            <div class="input-group">
+                <div class="input-header">
+                    <span>Wheel Diameter</span>
+                    <span class="value">
+                        <span id="wheelDiameterValue">42</span> mm
+                    </span>
+                </div>
+
+                <input
+                    type="range"
+                    id="wheelDiameter"
+                    min="20"
+                    max="100"
+                    step="1"
+                    value="42"
+                >
+            </div>
+
+            <div class="input-group">
+                <div class="input-header">
+                    <span>Drivetrain Efficiency</span>
+                    <span class="value">
+                        <span id="efficiencyValue">85</span>%
+                    </span>
+                </div>
+
+                <input
+                    type="range"
+                    id="efficiency"
+                    min="50"
+                    max="100"
+                    step="1"
+                    value="85"
+                >
+            </div>
+
+            <div class="input-group">
+                <div class="input-header">
+                    <span>Motor Speed</span>
+                    <span class="value">
+                        <span id="rpmValue">200</span> RPM
+                    </span>
+                </div>
+
+                <input
+                    type="range"
+                    id="rpm"
+                    min="50"
+                    max="500"
+                    step="10"
+                    value="200"
+                >
+            </div>
+
+        </div>
+
+
+        <!-- RESULTS -->
+        <div class="card">
+
+            <h2>Calculated Results</h2>
+
+            <div class="formula">
+                τ = F × r
+            </div>
+
+            <div class="result">
+
+                <div>Effective Wheel Torque</div>
+
+                <div class="result-number" id="wheelTorque">
+                    0.087
+                </div>
+
+                <div class="unit">
+                    N·m
+                </div>
+
+            </div>
+
+            <div class="result" style="margin-top: 15px;">
+
+                <div>Driving Force</div>
+
+                <div class="result-number" id="drivingForce">
+                    4.13
+                </div>
+
+                <div class="unit">
+                    N
+                </div>
+
+            </div>
+
+            <div class="result" style="margin-top: 15px;">
+
+                <div>Theoretical Speed</div>
+
+                <div class="result-number" id="speed">
+                    1.58
+                </div>
+
+                <div class="unit">
+                    km/h
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- VISUALISATION -->
+        <div class="card full-width">
+
+            <h2>Torque → Force Visualisation</h2>
+
+            <p>
+                The wheel radius acts as the lever arm. Increasing torque
+                increases the tangential force applied to the ground.
+            </p>
+
+            <div class="wheel">
+
+                <div class="axle"></div>
+
+                <div class="force-arrow"></div>
+
+            </div>
+
+            <div class="bar-container">
+
+                <strong>Driving Force</strong>
+
+                <div class="bar-background">
+                    <div class="bar" id="forceBar"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CALCULATION -->
+        <div class="card full-width">
+
+            <h2>Live Calculation</h2>
+
+            <div class="equation-step" id="step1"></div>
+
+            <div class="equation-step" id="step2"></div>
+
+            <div class="equation-step" id="step3"></div>
+
+            <div class="equation-step" id="step4"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const motorTorque =
+    document.getElementById("motorTorque");
+
+const motorCount =
+    document.getElementById("motorCount");
+
+const wheelDiameter =
+    document.getElementById("wheelDiameter");
+
+const efficiency =
+    document.getElementById("efficiency");
+
+const rpm =
+    document.getElementById("rpm");
+
+
+function calculate() {
+
+    // Read slider values
+    const torqueKgCm =
+        parseFloat(motorTorque.value);
+
+    const motors =
+        parseInt(motorCount.value);
+
+    const diameterMm =
+        parseFloat(wheelDiameter.value);
+
+    const efficiencyValue =
+        parseFloat(efficiency.value) / 100;
+
+    const motorRPM =
+        parseFloat(rpm.value);
+
+
+    // Convert kg·cm → N·m
+    const torqueNm =
+        torqueKgCm * 0.0980665;
+
+
+    // Total motor torque
+    const totalTorque =
+        torqueNm * motors;
+
+
+    // Effective wheel torque
+    const wheelTorque =
+        totalTorque * efficiencyValue;
+
+
+    // Wheel radius
+    const radius =
+        (diameterMm / 1000) / 2;
+
+
+    // Driving force
+    const force =
+        wheelTorque / radius;
+
+
+    // Wheel circumference
+    const circumference =
+        Math.PI * (diameterMm / 1000);
+
+
+    // Theoretical speed
+    const speedMs =
+        circumference * motorRPM / 60;
+
+    const speedKmh =
+        speedMs * 3.6;
+
+
+    // Update displayed values
+
+    document.getElementById("motorTorqueValue")
+        .textContent = torqueKgCm.toFixed(2);
+
+    document.getElementById("motorCountValue")
+        .textContent = motors;
+
+    document.getElementById("wheelDiameterValue")
+        .textContent = diameterMm;
+
+    document.getElementById("efficiencyValue")
+        .textContent =
+        Math.round(efficiencyValue * 100);
+
+    document.getElementById("rpmValue")
+        .textContent = motorRPM;
+
+
+    document.getElementById("wheelTorque")
+        .textContent =
+        wheelTorque.toFixed(3);
+
+    document.getElementById("drivingForce")
+        .textContent =
+        force.toFixed(2);
+
+    document.getElementById("speed")
+        .textContent =
+        speedKmh.toFixed(2);
+
+
+    // Update force visualisation
+
+    const bar =
+        document.getElementById("forceBar");
+
+    const percentage =
+        Math.min((force / 10) * 100, 100);
+
+    bar.style.width =
+        percentage + "%";
+
+
+    // Update live equations
+
+    document.getElementById("step1")
+        .textContent =
+        `Motor torque = ${torqueKgCm.toFixed(2)} kg·cm
+        = ${torqueNm.toFixed(4)} N·m`;
+
+    document.getElementById("step2")
+        .textContent =
+        `Total torque = ${torqueNm.toFixed(4)}
+        × ${motors}
+        = ${totalTorque.toFixed(4)} N·m`;
+
+    document.getElementById("step3")
+        .textContent =
+        `Wheel torque = ${totalTorque.toFixed(4)}
+        × ${efficiencyValue.toFixed(2)}
+        = ${wheelTorque.toFixed(4)} N·m`;
+
+    document.getElementById("step4")
+        .textContent =
+        `Driving force = ${wheelTorque.toFixed(4)}
+        ÷ ${radius.toFixed(4)}
+        = ${force.toFixed(2)} N`;
+}
+
+
+// Recalculate whenever a slider changes
+
+motorTorque.addEventListener("input", calculate);
+motorCount.addEventListener("input", calculate);
+wheelDiameter.addEventListener("input", calculate);
+efficiency.addEventListener("input", calculate);
+rpm.addEventListener("input", calculate);
+
+
+// Initial calculation
+calculate();
+
+</script>
+
+</body>
+</html>
