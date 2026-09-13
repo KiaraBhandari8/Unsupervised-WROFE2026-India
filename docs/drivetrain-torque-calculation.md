@@ -580,3 +580,31 @@ Based on the assumed motor specifications and drivetrain efficiency:
 | Theoretical maximum speed | **1.58 km/h** |
 
 **Overall conclusion:** The calculated drivetrain torque is adequate for moving the 1.3 kg WRO robot on a flat competition surface under the stated assumptions. Further testing should be performed to determine the actual acceleration, maximum speed, traction limit, and drivetrain efficiency of the completed robot.
+
+
+---
+
+# Interactive Torque Calculator
+
+Use the interactive calculator to experiment with:
+
+- Motor torque
+- Number of motors
+- Wheel diameter
+- Drivetrain efficiency
+- Motor RPM
+
+The calculator automatically calculates:
+
+- Total motor torque
+- Effective wheel torque
+- Driving force
+- Theoretical wheel speed
+
+👉 **[Open the Interactive Torque Calculator](torque-calculator.html)**
+
+The calculator provides a live visualisation of the relationship:
+
+$$
+\tau = F \times r
+$$
