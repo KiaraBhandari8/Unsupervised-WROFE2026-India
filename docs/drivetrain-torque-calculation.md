@@ -586,7 +586,10 @@ Based on the assumed motor specifications and drivetrain efficiency:
 
 # Interactive Torque Calculator
 
-Use the interactive calculator to experiment with:
+The following interactive calculator allows the drivetrain parameters
+to be changed dynamically.
+
+### Parameters
 
 - Motor torque
 - Number of motors
@@ -594,17 +597,19 @@ Use the interactive calculator to experiment with:
 - Drivetrain efficiency
 - Motor RPM
 
-The calculator automatically calculates:
+The calculator dynamically updates:
 
 - Total motor torque
 - Effective wheel torque
 - Driving force
-- Theoretical wheel speed
+- Theoretical speed
+- Torque-to-force visualisation
 
-👉 **[Open the Interactive Torque Calculator](torque-calculator.html)**
+---
 
-The calculator provides a live visualisation of the relationship:
+## Launch Calculator
 
-$$
-\tau = F \times r
+🎛️ **[Open the Interactive Torque Calculator →](https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/torque-calculator.html)**
+
+> The calculator is hosted using GitHub Pages and runs directly in the browser.
 $$
