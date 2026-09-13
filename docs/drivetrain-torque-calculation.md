@@ -609,7 +609,7 @@ The calculator dynamically updates:
 
 ## Launch Calculator
 
-🎛️ **[Open the Interactive Torque Calculator →](https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/torque-calculator.html)**
+🎛️ **[Open the Interactive Torque Calculator →](https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/docs/torque-calculator.html)**
 
 > The calculator is hosted using GitHub Pages and runs directly in the browser.
 $$
