@@ -129,7 +129,7 @@ This code showcases our navigation manoeuvre. You can go through this to get a b
 
 ### Drivetrain Torque Calculation
 
-[Click here to view the drivetrain torque calculation](drivetrain-torque-calculation.md)
+[Click here to view the drivetrain torque calculation](docs/drivetrain-torque-calculation.md)
 
 -------------------------------------------------------
 ## Building Instructions
