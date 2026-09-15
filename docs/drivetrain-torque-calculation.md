@@ -609,7 +609,7 @@ The calculator dynamically updates:
 
 ## Launch Calculator
 
-🎛️ **[Open the Interactive Torque Calculator →](https://ShubhGuptaWRO.github.io/YOUR-REPOSITORY/docs/torque-calculator.html)**
+🎛️ **[Open the Interactive Torque Calculator →](https://kiarabhandari8.github.io/Unsupervised-WROFE2026-India/torque-calculator.html)**
 
 > The calculator is hosted using GitHub Pages and runs directly in the browser.
 $$
