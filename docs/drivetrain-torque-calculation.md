@@ -39,7 +39,6 @@ where:
 | Estimated drivetrain efficiency | $\eta$ | 85% |
 | Gravitational acceleration | $g$ | 9.81 m/s² |
 
-> **Note:** The 85% efficiency is an engineering estimate accounting for losses in the differential, gears, bearings, axle, and other mechanical components. It should be replaced by a measured efficiency if experimental data is available.
 
 ---
 
