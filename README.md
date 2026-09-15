@@ -14,6 +14,7 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
   - [Mobility Management](#mobility-management)
     - [Controlling the Motors](#controlling-the-motors)
     - [Robot Dimensions](#robot-dimensions)
+    - [Drivetrain Torque Calculation](#drivetrain-torque-calculation)
   - [Building Instructions](#building-instructions)
   - [Power & Sense Management](#power--sense-management)
     - [Hardware Architecture](#hardware-architecture)
@@ -125,6 +126,10 @@ We chose the dimensions of **50 cm × 29.5 cm × 22 cm** to provide a balance be
 The two N20 gear motors are controlled by the ESP32 through the TB6612FNG dual motor driver. The Raspberry Pi sends movement commands to the ESP32, which controls the motors according to the required speed and direction. The MG996 steering servo is controlled by the ESP32 through the PCA9685 PWM servo driver.
 
 This code showcases our navigation manoeuvre. You can go through this to get a better understanding. [Click here for navigation code](codes/aug15_1/nav_process.py)
+
+### Drivetrain Torque Calculation
+
+[Click here to view the drivetrain torque calculation](drivetrain-torque-calculation.md)
 
 -------------------------------------------------------
 ## Building Instructions
