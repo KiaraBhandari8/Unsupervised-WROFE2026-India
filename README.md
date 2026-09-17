@@ -63,6 +63,9 @@ The challenge requires students to construct an autonomous robot which will unde
 [Obstacle Round Video 1 - Practice before Nationals on Youtube](https://youtu.be/hUuTf3fS2V0?si=C6_U4KdSrS-R3kdz) <br>
 [Obstacle Round Video 2 - Practice before Nationals on Youtube](https://youtu.be/6QX_Y3WPMX4?si=ZPCf-lAfKMT5tgFE)
 
+## Matlab Video
+[Matlab usage and explanation](https://youtu.be/cSldkeClAug?si=Nf5bUmlcxWWf90j0)
+
 ## List of Components
 
 | Name of Component | Quantity | Picture |
@@ -275,6 +278,11 @@ The image-processing pipeline consists of:
 7. Passing the resulting information to the navigation algorithm.
 
 ### MATLAB-Based Obstacle Detection and Colour Segmentation
+
+
+[Matlab usage and explanation](https://youtu.be/cSldkeClAug?si=Nf5bUmlcxWWf90j0)
+<br>
+
 A key challenge in autonomous navigation is converting the visual information captured by the camera into information that the robot can use to make decisions. The raw camera image contains the complete environment, including the track, obstacles, boundaries and surrounding background. Processing this entire image directly would introduce unnecessary visual information and make reliable obstacle identification more difficult.
 
 To address this, we developed a colour-based image-segmentation approach using MATLAB. MATLAB was used to analyse camera images and investigate how the coloured obstacles could be isolated from the surrounding environment. The segmentation process converts the original image into a simplified representation in which pixels corresponding to relevant obstacle colours are identified and separated from the background.
