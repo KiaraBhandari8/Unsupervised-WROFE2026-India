@@ -85,6 +85,7 @@ The challenge requires students to construct an autonomous robot which will unde
 | N20 wheels | 4 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/e54c118c-2956-4393-8d43-4b2afd229bf5" /> |
 | Lazy Susan Turntable Bearings | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/236d9dd5-82f3-4874-a29f-3ce52fc81cbf" /> | 
 
+[Why we chose each component](mech/components) <br>
 ## Robot Pictures
 
 <img width="500" height="500" alt="WhatsApp Video 2026-08-18 at 6 07 50 PM" src="https://github.com/user-attachments/assets/8adb4acc-fa81-404d-aa8e-ae388952254d" />
