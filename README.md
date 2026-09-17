@@ -17,6 +17,7 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
     - [Drivetrain Torque Calculation](#drivetrain-torque-calculation)
   - [Building Instructions](#building-instructions)
   - [Power & Sense Management](#power--sense-management)
+    - [Power Distribution](#main--power-supply)
     - [Hardware Architecture](#hardware-architecture)
       - [Current Stabilisation](#current-stabilisation)
   - [Obstacle Management](#obstacle-management)
