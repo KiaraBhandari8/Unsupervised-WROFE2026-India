@@ -27,3 +27,56 @@ This modification also makes the overall drivetrain more reliable by reducing un
 **Why We Chose These Dimensions:**
 
 We chose the dimensions of **50 cm × 29.5 cm × 22 cm** to provide a balance between **stability, manoeuvrability, and component placement**. The 50 cm length provides enough space to accommodate the drivetrain, battery, electronics, and sensors while maintaining a compact overall design. The 29.5 cm width provides sufficient stability during movement and turning without making the robot unnecessarily wide. The 22 cm height keeps the robot's centre of mass relatively low while providing enough clearance for mounting the camera, LiDAR, and other electronic components. These dimensions also allow the robot to remain compact enough for efficient navigation around the track.
+
+
+#### 1.5 Lidar position reasoning
+Here's the detailed version rewritten in simpler language:
+
+---
+
+**Why We Placed the LiDAR at the Bottom Front of the Robot**
+
+We decided to mount the LiDAR sensor as low as possible on the robot, and at the front, instead of putting it higher up or in the middle. Here's why we made that choice:
+
+1. **The Boundaries Are Only 10 cm High**
+The walls around the competition field are just 10 cm tall. If we mounted the LiDAR any higher than that, its scanning beam would pass over the top of the boundaries instead of hitting them. That would mean the robot couldn't "see" the walls at all, or it would only catch them at a weird angle that gives unreliable readings. By keeping the LiDAR low, close to the height of the boundaries, we make sure the sensor always detects them properly.
+
+2. **We Only Use the Front, Left, and Right Readings**
+Since the LiDAR is mounted at the front of the robot, we only look at the distance readings coming from three directions: straight ahead, to the left, and to the right. We don't use the readings from behind the robot, because that direction would just be pointing back into the robot's own body, not out into the field. This also means the robot doesn't have to process a full circle of data — just the three directions it actually needs to make driving decisions.
+
+3. **It Keeps the Robot's Weight Low**
+The LiDAR and the bracket that holds it are some of the heavier parts on the robot. By mounting them near the bottom, we keep the robot's center of gravity low. This makes the robot more stable when it's turning quickly, speeding up, or slowing down, so it's less likely to tip over during sharp movements.
+
+4. **It Avoids Getting Blocked by the Robot's Own Parts**
+If the LiDAR were mounted higher up, other parts of the robot — like motors, wires, or arms — could get in the way of its scanning beam. This would create blind spots or cause the sensor to pick up false readings from bouncing off the robot's own body. Mounting it low and at the front keeps its view clear.
+
+5. **It Shortens the Wiring**
+Since the LiDAR is near the bottom, close to where the main control board usually sits, the wires connecting them don't have to travel far. This means less clutter, less chance of signal problems, and it's easier to fix things if something goes wrong.
+
+6. **It Protects the LiDAR from Getting Bumped**
+Mounting the LiDAR low and tucked in helps protect its spinning parts from accidentally getting hit by other moving parts of the robot, like an arm or lift, which are usually mounted higher up and move around during a run.
+
+7. **It Makes Combining Sensor Data Easier**
+Our robot doesn't rely on the LiDAR alone — it also uses data from wheel encoders and an IMU (a sensor that tracks movement and orientation) to figure out where it is. When the LiDAR is mounted low and facing forward, it's easier to combine all this data together accurately, because everything is aligned in a similar reference point close to the ground.
+
+---
+
+```mermaid
+flowchart TD
+    A[Field boundaries are only 10 cm high] --> B[LiDAR mounted low and at the front]
+    B --> C[Scans line up correctly with boundaries and obstacles]
+    B --> D[Only Front, Left, and Right readings are used]
+    D --> E[No need to check behind the robot]
+    D --> F[Less data to process]
+    B --> G[Keeps heavy LiDAR weight low]
+    G --> H[Lower center of gravity]
+    H --> I[More stable during fast turns]
+    B --> J[Sensor view stays clear of motors, wires, and arms]
+    J --> K[No blind spots or false readings]
+    B --> L[Shorter wiring to the control board]
+    L --> M[Less clutter and easier to fix]
+    B --> N[LiDAR is protected from bumps]
+    N --> O[Arms and lifts move above it without hitting it]
+    B --> P[Easier to combine with IMU and encoder data]
+    P --> Q[More accurate positioning overall]
+```
