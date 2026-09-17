@@ -29,11 +29,7 @@ This modification also makes the overall drivetrain more reliable by reducing un
 We chose the dimensions of **50 cm × 29.5 cm × 22 cm** to provide a balance between **stability, manoeuvrability, and component placement**. The 50 cm length provides enough space to accommodate the drivetrain, battery, electronics, and sensors while maintaining a compact overall design. The 29.5 cm width provides sufficient stability during movement and turning without making the robot unnecessarily wide. The 22 cm height keeps the robot's centre of mass relatively low while providing enough clearance for mounting the camera, LiDAR, and other electronic components. These dimensions also allow the robot to remain compact enough for efficient navigation around the track.
 
 
-#### 1.5 Lidar position reasoning
-Here's the detailed version rewritten in simpler language:
-
----
-
+##### 1.6 LiDAR positioning
 **Why We Placed the LiDAR at the Bottom Front of the Robot**
 
 We decided to mount the LiDAR sensor as low as possible on the robot, and at the front, instead of putting it higher up or in the middle. Here's why we made that choice:
