@@ -657,7 +657,7 @@ flowchart TD
 
 
 #### Corner Logic Open Round
-![Open Round Lap Count Logic](md/lap_open_round.png
+![Open Round Lap Count Logic](md/lap_open_round.png)
 
 #### Corner Logic Obstacle Round
 
