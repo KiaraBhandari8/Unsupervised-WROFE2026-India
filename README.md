@@ -662,22 +662,20 @@ flowchart TD
 #### Corner Logic Obstacle Round
 
 ```mermaid
-flowchart TD
-    Start([Start]) --> Init["lap=1, 3 laps x 4 sections"]
-    Init --> ScoutQ{"Lap 1?"}
-    ScoutQ -- yes --> Scout["SCOUTING: camera reads,<br/>saves to memory"]
-    ScoutQ -- no --> Replay["REPLAY: drives from memory"]
-    Scout --> SecStart
-    Replay --> SecStart
-    SecStart["Drive section (1->2->3->4)"] --> FinalQ{"Last lap AND section?"}
-    FinalQ -- yes --> StopRun(["Stop — done"])
-    FinalQ -- no --> SecEndQ{"Finished section 4?"}
-    SecEndQ -- no --> SecStart
-    SecEndQ -- yes --> LapEndQ{"Finished lap 3?"}
-    LapEndQ -- no --> ScoutQ
-    LapEndQ -- yes --> StopRun
-```
+flowchart LR
+    A([Start]) --> B["Lap 1: SCOUTING<br/>camera reads obstacles,<br/>saves to memory"]
+    B --> C["Drive sections 1, 2, 3, 4<br/>(section counter resets each lap)"]
+    C --> D["Lap 2: REPLAY<br/>camera off,<br/>drives from saved memory"]
+    D --> E["Drive sections 1, 2, 3, 4"]
+    E --> F["Lap 3: REPLAY<br/>same as lap 2"]
+    F --> G["Drive sections 1, 2, 3, 4"]
+    G --> H(["Section 4 of lap 3 reached -><br/>stop, no next section"])
 
+    A2([If PARKING_OUT armed]) --> B2["Before lap 1 starts:<br/>LiDAR decides direction<br/>(clockwise or counter-clockwise)"]
+    B2 --> C2["Lap 1, Section 1 is replaced<br/>by the parking-out routine<br/>instead of a normal drive"]
+    C2 --> D2["Parking-out finishes its own<br/>corner turn, then rejoins<br/>the normal flow at Section 2"]
+    D2 -.-> C
+```
 
 
 **How the round counting works**
