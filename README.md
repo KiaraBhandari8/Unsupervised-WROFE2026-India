@@ -148,12 +148,12 @@ This code showcases our navigation manoeuvre. You can go through this to get a b
 
 - **Custom PCB**<br>
   Fabricate the board using the Gerber files located in the project repository. Carefully solder all components onto the PCB, including power regulators, motor drivers, and pin headers. Before connecting battery power, perform a continuity test with a multimeter across the power and ground rails to ensure there are no short circuits.<br>
-[Click here to open the schematics](mech)
+[Click here to open the schematics](elec/schematic.PNG)
 
 - **Assemble the Robot**<br>
   Mechanically assembling the robot is quite straight-forward. The tricky part comes with the electrical connections. Make sure you follow correctly the following electrical drawings.<br>
 _Take notes, the drawings are quite small ! Make sure to download the PDF files to be able to zoom._ <br>
-[Click here to open the electrical drawings](mech)
+[Click here to open the electrical drawings](elec/schematic.PNG)
 
 - **Sensor Setup (LiDAR & Pi Camera)** <br>
   Secure the Pi Camera and LiDAR module onto their designated 3D-printed chassis mounts. Connect the camera to the host board's CSI port using the ribbon cable, ensuring correct pin orientation. Wire the LiDAR module to the host via USB or serial interface. Run the hardware verification scripts to verify the camera stream and confirm that 360-degree scan data is streaming cleanly into memory.<br>
