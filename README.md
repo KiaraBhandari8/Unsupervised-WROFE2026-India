@@ -64,7 +64,7 @@ The challenge requires students to construct an autonomous robot which will unde
 [Obstacle Round Video 2 - Practice before Nationals on Youtube](https://youtu.be/6QX_Y3WPMX4?si=ZPCf-lAfKMT5tgFE)
 
 ## Matlab Video
-[Matlab usage and explanation](https://youtu.be/cSldkeClAug?si=Nf5bUmlcxWWf90j0)
+[Youtube Video: Explanation On How We Used Matlab](https://youtu.be/cSldkeClAug?si=Nf5bUmlcxWWf90j0)
 
 ## List of Components
 
@@ -409,7 +409,7 @@ flowchart TD
 ### MATLAB-Based Obstacle Detection and Colour Segmentation
 
 
-[Matlab usage and explanation](https://youtu.be/cSldkeClAug?si=Nf5bUmlcxWWf90j0)
+[Youtube Video: Explanation On How We Used Matlab](https://youtu.be/cSldkeClAug?si=Nf5bUmlcxWWf90j0)
 <br>
 
 A key challenge in autonomous navigation is converting the visual information captured by the camera into information that the robot can use to make decisions. The raw camera image contains the complete environment, including the track, obstacles, boundaries and surrounding background. Processing this entire image directly would introduce unnecessary visual information and make reliable obstacle identification more difficult.
