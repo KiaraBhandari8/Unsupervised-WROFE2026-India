@@ -657,10 +657,47 @@ flowchart TD
 
 
 #### Corner Logic Open Round
-![Open Round Lap Count Logic](md/lap_open_round.png)
+![Open Round Lap Count Logic](md/lap_open_round.png
 
 #### Corner Logic Obstacle Round
-![Obstacle Round Lap Count Logic](md/obs_round_lap.png)
+
+```mermaid
+flowchart TD
+    Start([Start run]) --> Init["current_lap = 1<br/>TOTAL_LAPS = 3<br/>SECTIONS_PER_LAP = 4"]
+
+    Init --> LapLoop["Lap loop:<br/>current_lap = 1, 2, 3"]
+    LapLoop --> ScoutQ{"Is this<br/>lap 1?"}
+    ScoutQ -- yes --> Scout["SCOUTING lap:<br/>camera reads obstacles,<br/>records them to memory"]
+    ScoutQ -- no --> Replay["REPLAY lap:<br/>camera off,<br/>drives from recorded memory"]
+
+    Scout --> SecLoop
+    Replay --> SecLoop
+
+    SecLoop["Section loop:<br/>current_section = 1, 2, 3, 4"] --> RunSec["Drive this section"]
+    RunSec --> FinalQ{"Was this<br/>lap 3, section 4?<br/>(the very last one)"}
+
+    FinalQ -- yes --> StopRun["Stop the robot.<br/>Run complete."]
+    FinalQ -- no --> NextSec["Set up and move to<br/>the next section"]
+
+    NextSec --> SecEndQ{"Just finished<br/>section 4?"}
+    SecEndQ -- no --> SecLoop
+    SecEndQ -- yes --> LapEnd["Lap finished"]
+
+    LapEnd --> LapEndQ{"Just finished<br/>lap 3?"}
+    LapEndQ -- no --> LapLoop
+    LapEndQ -- yes --> StopRun
+
+    StopRun --> End([End])
+```
+
+**How the round counting works**
+
+The robot's course is divided into 4 fixed "sections" (roughly corner-to-corner segments), and a full run is 3 laps around that same course — so 12 sections total, tracked with two simple counters: `current_lap` (1–3) and `current_section` (1–4).
+
+- **Lap 1 is the "scouting" lap.** The camera is on, and as the robot drives each section it identifies obstacles and writes what it saw into memory (keyed by lap/section).
+- **Laps 2 and 3 are "replay" laps.** The camera turns off, and the robot just drives off what it already memorized in lap 1 — same course, so no need to re-observe it.
+- **The section counter drives the inner loop**, cycling 1→2→3→4 within each lap before the lap counter increments.
+- **The run doesn't stop because a counter rolls over** — it stops because of one explicit check: "is this lap 3 *and* section 4?" (i.e., the very last section of the very last lap). When that's true, the robot just stops in place instead of continuing on to a section 5 that doesn't exist. Every other section transition automatically sets up and moves into the next one.
 
 -------------------------------------------------------
 ### Possible Improvements
