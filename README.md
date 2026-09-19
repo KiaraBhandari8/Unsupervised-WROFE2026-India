@@ -256,18 +256,6 @@ The GY-87 IMU provides accelerometer and gyroscope data. Gyroscope yaw data is u
 
 The navigation system combines information from these sensors to determine the appropriate steering angle and motor speed. The Raspberry Pi processes the sensor data and sends movement commands to the ESP32, which controls the steering servo and drive motors. 
 
-### 1) Image Pipeline (Inputs Used by Algorithms)
-
-<img width="444" height="250" alt="Untitled design-2-2" src="https://github.com/user-attachments/assets/d5c46602-b48c-4c1b-8e20-0aed8f2d05d7" />
-
-**Obstacle Detection Algorithm**
-
-The camera captures images of the arena, which are processed on the Raspberry Pi.
-
-<img width="2000" height="1414" alt="1" src="https://github.com/user-attachments/assets/8935a921-8698-499d-b142-c46658fe8dcd" />
-
-<img width="2000" height="1414" alt="2" src="https://github.com/user-attachments/assets/edc4174c-c3c8-4de0-90a3-61cd61d0c429" /> <br> See [Nav_Process.py](codes/aug15_1/nav_process.py) and [Vision_Process.py](codes/aug15_1/vision_process.py) <br>
-
 # Obstacle Detection, Processing, and Avoidance
 
 ## 1. System Overview
@@ -289,7 +277,9 @@ In short: the camera tells the robot *what* it's looking at and which side to pa
 
 Before checking for obstacle colors, the system figures out which part of the camera frame is actually the drivable mat, so background clutter or walls never get mistaken for an obstacle.
 
-- Convert the frame from BGR to **LAB color space** and threshold the **L (lightness) channel** to separate bright mat pixels from dark background/obstacle pixels.
+<img width="2066" height="761" alt="docuemntaiton1" src="https://github.com/user-attachments/assets/2d2c14d9-9880-4dfc-b57f-ef4b4534ff50" /> <br> 
+
+- Convert the frame from BGR to **HSV color space** and threshold the **L (lightness) channel** to separate bright mat pixels from dark background/obstacle pixels.
 - Run a morphological **close** (dilate → erode) to bridge small gaps caused by colored tape lines, so tape doesn't split the mat into separate regions.
 - Use `cv2.connectedComponentsWithStats` to find all bright regions, then keep only the one **touching the bottom row** of the frame — that's the track the robot is currently on. Discard everything else.
 - This gives a binary **track mask** (255 = track, 0 = everything else). An obstacle sitting on the mat blocks the brightness underneath it, so it shows up as a dark "hole" inside the track region.
@@ -298,6 +288,9 @@ Before checking for obstacle colors, the system figures out which part of the ca
 ### 2.2 Color-Based Pillar Detection
 
 With the interior mask ready, the system looks for red and green pillars using HSV thresholding:
+
+<img width="378" height="191" alt="Screenshot 2026-09-19 at 6 23 32 PM" src="https://github.com/user-attachments/assets/47ff6ce7-c9f7-4808-bcd9-e0f0c5867b39" /> <br>
+
 
 - Convert BGR to **HSV**, since HSV separates color (hue) from lighting (saturation/value) much better than BGR.
 - **Green mask:** one hue range (default 35–85) plus minimum saturation/value floors.
@@ -322,6 +315,9 @@ There are two separate processing modes for two different purposes.
 
 Used for real-time, frame-by-frame pillar avoidance and for the standalone diagnostic tool:
 
+<img width="612" height="199" alt="Screenshot 2026-09-19 at 6 23 43 PM" src="https://github.com/user-attachments/assets/b3413456-6b45-40df-b74b-a1ff2d3be9fa" /> <br>
+
+
 - **Target point:** each color aims for an x-coordinate at the ROI edge opposite the side it must pass on (green → right edge, red → left edge), so the correction steers toward the correct passing side, not just toward the obstacle.
 - **Error:** horizontal pixel distance between the obstacle's detection point (bottom-center of its bounding box) and its target x-coordinate.
 - **PD control law:**
@@ -336,6 +332,8 @@ Used for real-time, frame-by-frame pillar avoidance and for the standalone diagn
 ### 3.2 Single-Shot Classification with Lap Memory
 
 The competition run doesn't steer continuously around pillars — instead it takes **one classification read per checkpoint** via `read_obstacle()`:
+
+<img width="368" height="199" alt="Screenshot 2026-09-19 at 6 23 54 PM" src="https://github.com/user-attachments/assets/c355fe5f-896f-4bbd-b199-40c6ab43be80" /> <br>
 
 - **Lap 1:** every section is actively scouted — capture a frame, run it through the Section 2 pipeline, and store the result (`red` / `green` / `none`) in a section map keyed by `(direction, section, level)`. A section can hold up to three obstacle positions (L1/L2/L3), but only specific combos are valid (a single obstacle, or L1+L3 — never L1+L2 or L2+L3).
 - **Later laps:** skip the camera for any section already scouted, and just recall the stored classification. This avoids risking a bad live read (motion blur, blocked view, lighting drift) for something that's already known and constant.
@@ -358,6 +356,9 @@ Each maneuver typically pairs with LiDAR-driven **wall-following-and-stop** (Sec
 ## 5. LiDAR's Role in Avoidance
 
 While the camera identifies the obstacle, the LiDAR continuously provides the distance/geometry needed to execute the maneuver safely:
+
+<img width="668" height="249" alt="Screenshot 2026-09-19 at 6 24 36 PM" src="https://github.com/user-attachments/assets/a6d65b24-5521-4ab1-80bd-e00a05b03305" /> <br>
+
 
 - **Front distance:** average of valid LiDAR points within ±10° of straight ahead — the main trigger for "stop advancing, execute next turn."
 - **Wall-parallel error:** PID input measuring how parallel the robot is to the wall it's following (left wall clockwise, right wall counter-clockwise, chosen dynamically from live shared state). Keeps a steady 500 mm standoff while passing a pillar.
