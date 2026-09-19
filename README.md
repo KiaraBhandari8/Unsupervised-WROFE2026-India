@@ -660,35 +660,31 @@ flowchart TD
 ![Open Round Lap Count Logic](md/lap_open_round.png)
 
 #### Corner Logic Obstacle Round
-
 ```mermaid
 flowchart TD
     Start([Start run]) --> Init["current_lap = 1<br/>TOTAL_LAPS = 3<br/>SECTIONS_PER_LAP = 4"]
 
-    Init --> LapLoop["Lap loop:<br/>current_lap = 1, 2, 3"]
-    LapLoop --> ScoutQ{"Is this<br/>lap 1?"}
-    ScoutQ -- yes --> Scout["SCOUTING lap:<br/>camera reads obstacles,<br/>records them to memory"]
-    ScoutQ -- no --> Replay["REPLAY lap:<br/>camera off,<br/>drives from recorded memory"]
+    Init --> LapStart["Start of lap"]
+    LapStart --> ScoutQ{"Is this lap 1?"}
+    ScoutQ -- yes --> Scout["SCOUTING lap:<br/>camera reads obstacles,<br/>saves them to memory"]
+    ScoutQ -- no --> Replay["REPLAY lap:<br/>camera off,<br/>drives from saved memory"]
 
-    Scout --> SecLoop
-    Replay --> SecLoop
+    Scout --> SecStart
+    Replay --> SecStart
 
-    SecLoop["Section loop:<br/>current_section = 1, 2, 3, 4"] --> RunSec["Drive this section"]
-    RunSec --> FinalQ{"Was this<br/>lap 3, section 4?<br/>(the very last one)"}
+    SecStart["Drive current section<br/>(section 1 -> 2 -> 3 -> 4)"] --> FinalQ{"Last lap AND<br/>last section?"}
 
-    FinalQ -- yes --> StopRun["Stop the robot.<br/>Run complete."]
+    FinalQ -- yes --> StopRun(["Stop the robot.<br/>Run complete."])
     FinalQ -- no --> NextSec["Set up and move to<br/>the next section"]
 
     NextSec --> SecEndQ{"Just finished<br/>section 4?"}
-    SecEndQ -- no --> SecLoop
-    SecEndQ -- yes --> LapEnd["Lap finished"]
+    SecEndQ -- no --> SecStart
+    SecEndQ -- yes --> LapEndQ{"Just finished<br/>lap 3?"}
 
-    LapEnd --> LapEndQ{"Just finished<br/>lap 3?"}
-    LapEndQ -- no --> LapLoop
+    LapEndQ -- no --> LapStart
     LapEndQ -- yes --> StopRun
-
-    StopRun --> End([End])
 ```
+
 
 **How the round counting works**
 
