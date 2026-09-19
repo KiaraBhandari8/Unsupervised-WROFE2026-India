@@ -663,19 +663,14 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    A([Start]) --> B["Lap 1: SCOUTING<br/>camera reads obstacles,<br/>saves to memory"]
-    B --> C["Drive sections 1, 2, 3, 4<br/>(section counter resets each lap)"]
-    C --> D["Lap 2: REPLAY<br/>camera off,<br/>drives from saved memory"]
-    D --> E["Drive sections 1, 2, 3, 4"]
-    E --> F["Lap 3: REPLAY<br/>same as lap 2"]
-    F --> G["Drive sections 1, 2, 3, 4"]
-    G --> H(["Section 4 of lap 3 reached -><br/>stop, no next section"])
+    A([Start]) --> B["Lap 1: SCOUTING<br/>camera reads & saves to memory<br/>Drives sections 1-4"]
+    B --> C["Laps 2 & 3: REPLAY<br/>camera off, drives from memory<br/>Drives sections 1-4 each lap"]
+    C --> D(["Stop after lap 3,<br/>section 4"])
 
-    A2([If PARKING_OUT armed]) --> B2["Before lap 1 starts:<br/>LiDAR decides direction<br/>(clockwise or counter-clockwise)"]
-    B2 --> C2["Lap 1, Section 1 is replaced<br/>by the parking-out routine<br/>instead of a normal drive"]
-    C2 --> D2["Parking-out finishes its own<br/>corner turn, then rejoins<br/>the normal flow at Section 2"]
-    D2 -.-> C
+    A2([If PARKING_OUT armed]) --> B2["Before lap 1: LiDAR decides direction.<br/>Lap 1 Section 1 is replaced by the<br/>parking-out routine, then rejoins<br/>the normal flow at Section 2"]
+    B2 -.-> B
 ```
+
 
 
 **How the round counting works**
