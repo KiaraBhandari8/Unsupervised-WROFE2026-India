@@ -268,14 +268,142 @@ The camera captures images of the arena, which are processed on the Raspberry Pi
 
 <img width="2000" height="1414" alt="2" src="https://github.com/user-attachments/assets/edc4174c-c3c8-4de0-90a3-61cd61d0c429" /> <br> See [Nav_Process.py](codes/aug15_1/nav_process.py) and [Vision_Process.py](codes/aug15_1/vision_process.py) <br>
 
-The image-processing pipeline consists of:
-1. Capturing an image from the camera.
-2. Converting the image into a HSV colour space.
-3. Segmenting the track.
-4. Detecting the relevant coloured regions.
-5. Identifying red and green obstacles.
-6. Determining the position of detected obstacles.
-7. Passing the resulting information to the navigation algorithm.
+# Obstacle Detection, Processing, and Avoidance
+
+## 1. System Overview
+
+Two sensors split the job:
+
+| Sensor | Role |
+|---|---|
+| Camera (RGB, HSV color analysis) | Figures out the **type** of obstacle — red pillar, green pillar, or none |
+| LiDAR | Measures **distance** to walls and obstacles, spots corners, and handles wall-following and stop triggers |
+
+In short: the camera tells the robot *what* it's looking at and which side to pass on; the LiDAR tells it *how close* things are and *when* to act. The driving logic combines both to decide on one maneuver per track section.
+
+---
+
+## 2. Detection Stage
+
+### 2.1 Track Isolation (Track Segmentation)
+
+Before checking for obstacle colors, the system figures out which part of the camera frame is actually the drivable mat, so background clutter or walls never get mistaken for an obstacle.
+
+- Convert the frame from BGR to **LAB color space** and threshold the **L (lightness) channel** to separate bright mat pixels from dark background/obstacle pixels.
+- Run a morphological **close** (dilate → erode) to bridge small gaps caused by colored tape lines, so tape doesn't split the mat into separate regions.
+- Use `cv2.connectedComponentsWithStats` to find all bright regions, then keep only the one **touching the bottom row** of the frame — that's the track the robot is currently on. Discard everything else.
+- This gives a binary **track mask** (255 = track, 0 = everything else). An obstacle sitting on the mat blocks the brightness underneath it, so it shows up as a dark "hole" inside the track region.
+- Fill that hole in to get a **filled interior mask** — "everything inside the track boundary, obstacle or not." This is needed because the raw track mask would blank out the very obstacle the pipeline is trying to find; the filled version is what color detection actually gets restricted to.
+
+### 2.2 Color-Based Pillar Detection
+
+With the interior mask ready, the system looks for red and green pillars using HSV thresholding:
+
+- Convert BGR to **HSV**, since HSV separates color (hue) from lighting (saturation/value) much better than BGR.
+- **Green mask:** one hue range (default 35–85) plus minimum saturation/value floors.
+- **Red mask:** red wraps around the hue wheel at 0°/180°, so two hue ranges (default 0°–7° and 173°–180°) are combined with `cv2.bitwise_or`.
+- Saturation/value floors are **tunable live** at runtime (thread-safe parameter store) to handle lighting changes at the venue without re-flashing code. Hue bounds stay mostly fixed since hue doesn't shift much with lighting — only their edges (where red/green fade into orange/yellow) are adjustable.
+- Apply a **morphological close** (7×7 elliptical kernel) to each color mask first, to reconnect a single obstacle that glare or reflections split into separate blobs.
+- **AND** both masks with the track interior mask from Section 2.1. This removes any pillar-colored object outside the track boundary at the pixel level, so it's never even offered to the contour detector.
+- If a post-corner rejection zone is active (a short window after a corner maneuver where leftover motion or a partial-turn frame could cause false detections), also mask out a vertical strip on the relevant side.
+- Detection is limited to a **Region of Interest (ROI)**: roughly the central 70% of frame width (15%–85%) and middle 76% of height (12%–88%). This avoids lens distortion and clutter at the extreme edges, while still leaving room for distant, small, high-in-frame obstacles to register at their true size.
+- Run `cv2.findContours` separately on the red and green masks. Drop any contour under **900 px²** to filter out tape specks, reflections, or noise.
+- If both colors have a surviving contour, pick the **larger** one, assuming the bigger blob is the nearer, currently-relevant obstacle.
+- Output: a `logic_label` of `red_obstacle`, `obstacle` (green), or `none`.
+- As a diagnostic aid: even if nothing clears the area filter, the largest unfiltered contour (either color) is still tracked and reported with its real area — this helps tell "obstacle present but too small/clipped" apart from "color threshold isn't catching it at all."
+
+---
+
+## 3. Processing Stage
+
+There are two separate processing modes for two different purposes.
+
+### 3.1 Continuous PD Steering Correction
+
+Used for real-time, frame-by-frame pillar avoidance and for the standalone diagnostic tool:
+
+- **Target point:** each color aims for an x-coordinate at the ROI edge opposite the side it must pass on (green → right edge, red → left edge), so the correction steers toward the correct passing side, not just toward the obstacle.
+- **Error:** horizontal pixel distance between the obstacle's detection point (bottom-center of its bounding box) and its target x-coordinate.
+- **PD control law:**
+  ```
+  steering_angle = Kp * error + Kd * (error - previous_error)
+  ```
+  with `Kp = 0.45`, `Kd = 0.1`. The derivative term smooths out single noisy frames. `previous_error` is stored per color across frames so the derivative term has something to compare against.
+- **Y-offset correction:** an extra term, `Y_OFFSET_GAIN * (obstacle_bottom_y - ROI_top_y)`, adds more steering push the closer the obstacle's bottom point is to the robot, applied in the direction of the x-error's sign. So correction strengthens as the robot approaches, instead of staying constant.
+- **Fallback when nothing is detected:** switch to line-centering — compare black pixel area on the left vs. right half of the ROI (the track lines) and steer to balance them. If the frame is very dark overall (mean grayscale under 50), treat it as a wall/corner ahead and apply a fixed sharp turn instead.
+- When no pillar is tracked in a frame, reset both colors' `previous_error` to zero, so a stale derivative doesn't cause a steering spike if a pillar reappears later.
+
+### 3.2 Single-Shot Classification with Lap Memory
+
+The competition run doesn't steer continuously around pillars — instead it takes **one classification read per checkpoint** via `read_obstacle()`:
+
+- **Lap 1:** every section is actively scouted — capture a frame, run it through the Section 2 pipeline, and store the result (`red` / `green` / `none`) in a section map keyed by `(direction, section, level)`. A section can hold up to three obstacle positions (L1/L2/L3), but only specific combos are valid (a single obstacle, or L1+L3 — never L1+L2 or L2+L3).
+- **Later laps:** skip the camera for any section already scouted, and just recall the stored classification. This avoids risking a bad live read (motion blur, blocked view, lighting drift) for something that's already known and constant.
+- If a scouting read got cut short (e.g. a safety timeout), `read_obstacle()` falls back to a live capture instead of trusting an incomplete record.
+
+---
+
+## 4. Avoidance Stage
+
+Once a `logic_label` (live or recalled) is available, the robot runs a fixed, pre-defined maneuver rather than steering freely:
+
+- **Green obstacle →** pass on the **right** (pillar stays on the robot's left).
+- **Red obstacle →** pass on the **left** (pillar stays on the robot's right).
+- **No obstacle →** take the default straight-through route.
+
+Each maneuver typically pairs with LiDAR-driven **wall-following-and-stop** (Section 5): the robot advances under wall-follow PID until the LiDAR's front distance crosses a stop threshold (350 mm for both green and "none" at checkpoint L3), then the next scripted turn fires.
+
+---
+
+## 5. LiDAR's Role in Avoidance
+
+While the camera identifies the obstacle, the LiDAR continuously provides the distance/geometry needed to execute the maneuver safely:
+
+- **Front distance:** average of valid LiDAR points within ±10° of straight ahead — the main trigger for "stop advancing, execute next turn."
+- **Wall-parallel error:** PID input measuring how parallel the robot is to the wall it's following (left wall clockwise, right wall counter-clockwise, chosen dynamically from live shared state). Keeps a steady 500 mm standoff while passing a pillar.
+- **Side-zone triggers:** points in the 50°–90° zone on each side are checked against a 200 mm threshold. 3+ such points trip a raw "obstruction on this side" flag — an independent safety signal separate from the wall-follow PID, for reacting faster than the PID alone might.
+- **Corner detection:** a split-and-merge algorithm looks for an L-shaped discontinuity in the LiDAR data, signaling a real track corner (not a pillar). This is handled by a separate cornering routine.
+
+---
+
+## 6. End-to-End Flow
+
+```mermaid
+flowchart TD
+    A[Camera frame captured] --> B[Track segmentation: isolate drivable mat]
+    B --> C[Build filled interior mask]
+    C --> D[HSV threshold: red mask and green mask]
+    D --> E[Morphological close: bridge glare gaps]
+    E --> F[Mask to track interior + ROI + reject zone]
+    F --> G[Contour detection per color]
+    G --> H[Filter contours below 900px minimum area]
+    H --> I{Contour survives filter?}
+    I -- No --> J[logic_label = none]
+    I -- Yes --> K[Select larger of red/green contour]
+    K --> L[logic_label = red_obstacle or obstacle]
+
+    J --> M[Lap 1: record none in section map]
+    L --> N[Lap 1: record color in section map]
+    M --> O[Lap 2+: recall from section map, skip camera read]
+    N --> O
+
+    O --> P{Recorded classification}
+    P -- Green --> Q[Execute pass-on-right route]
+    P -- Red --> R[Execute pass-on-left route]
+    P -- None --> S[Execute default straight route]
+
+    T[LiDAR scan] --> U[Front distance]
+    T --> V[Wall-parallel PID error]
+    T --> W[Side-zone trigger]
+    T --> X[Corner detection]
+
+    U --> Y[Stop-and-turn trigger]
+    V --> Z[Standoff distance during pass]
+
+    Q --> Y
+    R --> Y
+    S --> Y
+```
 
 ### MATLAB-Based Obstacle Detection and Colour Segmentation
 
