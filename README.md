@@ -61,7 +61,9 @@ The challenge requires students to construct an autonomous robot which will unde
 
 ### Challenge 2
 [Obstacle Round Video 1 - Practice before Nationals on Youtube](https://youtu.be/hUuTf3fS2V0?si=C6_U4KdSrS-R3kdz) <br>
-[Obstacle Round Video 2 - Practice before Nationals on Youtube](https://youtu.be/6QX_Y3WPMX4?si=ZPCf-lAfKMT5tgFE)
+[Obstacle Round Video 2 - Practice before Nationals on Youtube](https://youtu.be/6QX_Y3WPMX4?si=ZPCf-lAfKMT5tgFE) <br>
+[Obstacle Round Video 3 - Practice before APAC on Youtube](https://youtu.be/BjEGykfpRfE)
+
 
 ## Matlab Video
 [Youtube Video: Explanation On How We Used Matlab](https://youtu.be/cSldkeClAug?si=Nf5bUmlcxWWf90j0)
