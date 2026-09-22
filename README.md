@@ -12,7 +12,7 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
   - [List of Components](#list-of-components)
   - [Robot Pictures](#robot-pictures)
   - [Mobility Management](#mobility-management)
-    - [Controlling the Motors](#controlling-the-motors)
+    - [Controlling the Motor](#controlling-the-motor)
     - [Robot Dimensions](#robot-dimensions)
     - [Drivetrain Torque Calculation](#drivetrain-torque-calculation)
   - [Building Instructions](#building-instructions)
@@ -80,7 +80,7 @@ The challenge requires students to construct an autonomous robot which will unde
 | Silicon Labs CP2102 USB-to-UART Bridge | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/51b86460-cb8d-4ee2-b4d7-cae04b5f1223" /> |
 | HC-SR04 Ultrasonic Sensor | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/6b3e06b6-78e6-4789-aa50-27cb1e9129cb" /> |
 | MG996 Servo Motor | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/4e8ed4f9-2cff-482b-ac7c-e2f42677f6e7" /> |
-| N20 200 rpm Gear Motors | 2 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/79ed59ec-01e8-4c4c-be57-d74fc5afe898" /> |
+| 12V DC 600 RPM Encoder Motor | 1 | <img width="1066" height="800" alt="617ee66bbc025d72da6e6f25634cf3e0 image 1066x800" src="https://github.com/user-attachments/assets/b356e865-1ad1-45f1-af9f-06b52ba5d766" /> |
 | LiPo 3s 11.1v 2200 mAh Battery | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/975ba1bc-026f-4a03-b727-340d5b2d7c12" /> |
 | LM2596 Step-Down (Buck) DC-DC Switching Voltage Regulator Integrated Circuit (ESP32) | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/3a850fdf-1e0b-4753-a041-a333159d0240" /> |
 | XY-3606 DC-DC Step-Down Buck Converter Module (Raspberry Pi) | 1 | <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/8af8d885-89c7-4b68-9acc-c355d38f7582" /> |
@@ -107,7 +107,7 @@ The challenge requires students to construct an autonomous robot which will unde
 
 ## Mobility Management
 
-The robot uses a rear-wheel-drive system consisting of two N20 200 RPM gear motors connected to an RC car rear differential. The differential transfers the motors' motion to the rear wheels while allowing the wheels to rotate at different speeds during turns. Steering is provided by an MG996 servo motor connected to the front steering mechanism. The robot uses four N20 wheels, with the rear wheels being driven and the front wheels used for steering. A Lazy Susan turntable bearing supports the steering assembly.
+The robot uses a rear-wheel-drive system consisting of one 12V 600 RPM DC encoder motor connected to an RC car rear differential. The differential transfers the motors' motion to the rear wheels while allowing the wheels to rotate at different speeds during turns. Steering is provided by an MG996 servo motor connected to the front steering mechanism. The robot uses four N20 wheels, with the rear wheels being driven and the front wheels used for steering. A Lazy Susan turntable bearing supports the steering assembly.
 
 <img width="500" height="500" alt="WhatsApp Image 2026-08-18 at 6 07 51 PM" src="https://github.com/user-attachments/assets/eb0bfc8a-20ac-4862-9531-c909dcd38ae6" />
 
@@ -128,7 +128,7 @@ We chose the dimensions of **50 cm × 29.5 cm × 22 cm** to provide a balance be
 
 <img src="md/mobility diagram.jpeg">
 
-The two N20 gear motors are controlled by the ESP32 through the TB6612FNG dual motor driver. The Raspberry Pi sends movement commands to the ESP32, which controls the motors according to the required speed and direction. The MG996 steering servo is controlled by the ESP32 through the PCA9685 PWM servo driver.
+The DC motor is controlled by the ESP32 through the TB6612FNG dual motor driver. The Raspberry Pi sends movement commands to the ESP32, which controls the motors according to the required speed and direction. The MG996 steering servo is controlled by the ESP32 through the PCA9685 PWM servo driver.
 
 This code showcases our navigation manoeuvre. You can go through this to get a better understanding. [Click here for navigation code](codes/aug15_1/nav_process.py)
 
@@ -165,7 +165,7 @@ _Take notes, the drawings are quite small ! Make sure to download the PDF files 
 
 The robot is powered from a single 11.1 V, 3S LiPo battery. A main power switch is placed immediately after the battery's positive terminal, so that every downstream circuit — both buck converters and the raw motor rail — is gated by this one switch. 
 
-From the switched 11.1 V rail, power is distributed along two separate paths. The raw 11.1 V supply is routed directly to the VM pins of the TB6612FNG motor driver, so the motors are driven at full battery voltage without regulation. The same rail also feeds the input of the first buck converter, from which all regulated voltages in the system are ultimately derived.
+From the switched 11.1 V rail, power is distributed along two separate paths. The raw 11.1 V supply is routed directly to the VM pins of the TB6612FNG motor driver, so the motor is driven at full battery voltage without regulation. The same rail also feeds the input of the first buck converter, from which all regulated voltages in the system are ultimately derived.
 
 This separation is intentional. Motor drive current is comparatively high and electrically noisy, due to switching transients and back-EMF, and is therefore kept on an unregulated path rather than passed through a converter that would otherwise have to absorb that noise.
 
@@ -236,7 +236,7 @@ The ESP32 handles real-time motor and steering control and interfaces with the r
 
 The YDLidar T-Mini Plus provides distance measurements around the robot for wall following and collision avoidance, while the camera provides visual information for detecting and avoiding coloured obstacles. <br> [Why We Chose the YDLiDAR](mech/components)
 
-The PCA9685 PWM driver controls the MG996 steering servo, while the TB6612FNG motor driver controls the N20 drive motors.
+The PCA9685 PWM driver controls the MG996 steering servo, while the TB6612FNG motor driver controls the DC motors. 
 
 
 
@@ -254,7 +254,7 @@ The YDLidar T-Mini Plus provides distance measurements around the robot. These m
 
 The GY-87 IMU provides accelerometer and gyroscope data. Gyroscope yaw data is used by the navigation software for heading correction, cornering, and lane re-centering after obstacle avoidance.
 
-The navigation system combines information from these sensors to determine the appropriate steering angle and motor speed. The Raspberry Pi processes the sensor data and sends movement commands to the ESP32, which controls the steering servo and drive motors. 
+The navigation system combines information from these sensors to determine the appropriate steering angle and motor speed. The Raspberry Pi processes the sensor data and sends movement commands to the ESP32, which controls the steering servo and drive motor. 
 
 # Obstacle Detection, Processing, and Avoidance
 
