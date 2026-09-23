@@ -14,19 +14,16 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
   - [List of Components](#list-of-components)
   - [Robot Pictures](#robot-pictures)
   - [Mobility Management](#mobility-management)
-<<<<<<< Updated upstream
     - [Controlling the Motor](#controlling-the-motor)
     - [Robot Dimensions](#robot-dimensions)
     - [Drivetrain Torque Calculation](#drivetrain-torque-calculation)
   - [Building Instructions](#building-instructions)
   - [Power and Sense Management](#power-and-sense-management)
     - [Power Distribution](#main--power-supply)
-=======
     - [Robot Dimensions](#robot-dimensions)
     - [Controlling the Motors](#controlling-the-motors)
   - [Building Instructions](#building-instructions)
-  - [Power \& Sense Management](#power--sense-management)
->>>>>>> Stashed changes
+  - [Power & Sense Management](#power--sense-management)
     - [Hardware Architecture](#hardware-architecture)
       - [Current Stabilisation](#current-stabilisation)
   - [Obstacle Management](#obstacle-management)
@@ -52,7 +49,7 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
     - [Thank You](#thank-you)
 
 ## Team
-<img width="4032" height="1500" alt="WhatsApp Image 2026-08-25 at 00 45 29" src="https://github.com/user-attachments/assets/49ed6802-0440-46f9-9aba-39b09cebed42" /> <br>
+<img width="4032" height="2250" alt="WhatsApp Image 2026-08-25 at 00 45 29" src="https://github.com/user-attachments/assets/49ed6802-0440-46f9-9aba-39b09cebed42" /> <br>
 
 
 | Name           | Profile                                | Role        |
@@ -74,16 +71,13 @@ The challenge requires students to construct an autonomous robot which will unde
 
 ### Challenge 2
 [Obstacle Round Video 1 - Practice before Nationals on Youtube](https://youtu.be/hUuTf3fS2V0?si=C6_U4KdSrS-R3kdz) <br>
-<<<<<<< Updated upstream
 [Obstacle Round Video 2 - Practice before Nationals on Youtube](https://youtu.be/6QX_Y3WPMX4?si=ZPCf-lAfKMT5tgFE) <br>
 [Obstacle Round Video 3 - Practice before APAC on Youtube](https://youtu.be/BjEGykfpRfE)
 
 
 ## Matlab Video
 [Youtube Video: Explanation On How We Used Matlab](https://youtu.be/cSldkeClAug?si=Nf5bUmlcxWWf90j0)
-=======
 [Obstacle Round Video 2 - Practice before Internationals on Youtube](https://youtu.be/6QX_Y3WPMX4?si=ZPCf-lAfKMT5tgFE)
->>>>>>> Stashed changes
 
 ## List of Components
 
@@ -176,7 +170,6 @@ _Take notes, the drawings are quite small ! Make sure to download the PDF files 
 
 - **Sensor Setup (LiDAR & Pi Camera)** <br>
   Secure the Pi Camera and LiDAR module onto their designated 3D-printed chassis mounts. Connect the camera to the host board's CSI port using the ribbon cable, ensuring correct pin orientation. Wire the LiDAR module to the host via USB or serial interface. Run the hardware verification scripts to verify the camera stream and confirm that 360-degree scan data is streaming cleanly into memory.<br>
-
 
 ## Power and Sense Management
 
