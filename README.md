@@ -661,7 +661,7 @@ flowchart TD
 #### Corner Logic Open Round
 ![Open Round Lap Count Logic](md/lap_open_round.png)
 
-#### Corner Logic Obstacle Round
+#### Round Counting Obstacle Round
 
 ```mermaid
 flowchart LR
