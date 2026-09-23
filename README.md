@@ -7,39 +7,52 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
 - [Unsupervised-WROFE2026-India](#unsupervised-wrofe2026-india)
   - [Table of Contents](#table-of-contents)
   - [Team](#team)
-  - [About the challenge](#about-the-challenge)
+  - [About the Challenge](#about-the-challenge)
   - [Performance Videos](#performance-videos)
+    - [Challenge 1](#challenge-1)
+    - [Challenge 2](#challenge-2)
   - [List of Components](#list-of-components)
   - [Robot Pictures](#robot-pictures)
   - [Mobility Management](#mobility-management)
+<<<<<<< Updated upstream
     - [Controlling the Motor](#controlling-the-motor)
     - [Robot Dimensions](#robot-dimensions)
     - [Drivetrain Torque Calculation](#drivetrain-torque-calculation)
   - [Building Instructions](#building-instructions)
   - [Power and Sense Management](#power-and-sense-management)
     - [Power Distribution](#main--power-supply)
+=======
+    - [Robot Dimensions](#robot-dimensions)
+    - [Controlling the Motors](#controlling-the-motors)
+  - [Building Instructions](#building-instructions)
+  - [Power \& Sense Management](#power--sense-management)
+>>>>>>> Stashed changes
     - [Hardware Architecture](#hardware-architecture)
       - [Current Stabilisation](#current-stabilisation)
   - [Obstacle Management](#obstacle-management)
     - [Vision Methods and Decision Making](#vision-methods-and-decision-making)
-    - [1) Image pipeline (inputs used by algorithms)](#1-image-pipeline-inputs-used-by-algorithms)
-    - [MATLAB-Based Obstacle Detection and Colour Segmentation](#MATLAB-Based-Obstacle-Detection-and-Colour-Segmentation)
-        - [HSV-Based Colour Segmentation](#HSV-Based-Colour-Segmentation)
-        - [Generation of Colour Masks](Generation-of-Colour-Masks)
-        - [Obstacle Selection](#Obstacle-Selection)
-        - [Engineering Significance](#Engineering-Significance)
-    - [2) Wall following calculations](#2-wall-following-calculations)
-    - [3) Obstacle handling calculations](#3-obstacle-handling-calculations)
-    - [4) Corner detection](#4-corner-detection)
-    - [5) Crash detection](#5-crash-detection)
-    - [6) Arbitration: choosing the action](#6-arbitration-choosing-the-action)
-    - [7) Tuning notes](#7-tuning-notes)
-    - [Block diagrams](#block-diagrams)
-  - [Possible Improvements](#possible-improvements)
-  - [Thank You](#thank-you)
+    - [1) Image Pipeline (Inputs Used by Algorithms)](#1-image-pipeline-inputs-used-by-algorithms)
+    - [MATLAB-Based Obstacle Detection and Colour Segmentation](#matlab-based-obstacle-detection-and-colour-segmentation)
+      - [HSV-Based Colour Segmentation](#hsv-based-colour-segmentation)
+      - [Generation of Colour Masks](#generation-of-colour-masks)
+      - [Obstacle Selection](#obstacle-selection)
+      - [Engineering Significance](#engineering-significance)
+    - [2) Wall Following Calculations](#2-wall-following-calculations)
+    - [3) Obstacle Handling Calculations](#3-obstacle-handling-calculations)
+    - [4) Corner Detection](#4-corner-detection)
+    - [5) Crash Detection](#5-crash-detection)
+    - [6) Arbitration: Choosing the Action](#6-arbitration-choosing-the-action)
+    - [7) Tuning Notes](#7-tuning-notes)
+    - [Block Diagrams](#block-diagrams)
+      - [Open Round Block Diagrams](#open-round-block-diagrams)
+      - [Obstacle Round Diagrams](#obstacle-round-diagrams)
+      - [Corner Logic Open Round](#corner-logic-open-round)
+      - [Corner Logic Obstacle Round](#corner-logic-obstacle-round)
+    - [Possible Improvements](#possible-improvements)
+    - [Thank You](#thank-you)
 
 ## Team
-<img width="4032" height="2268" alt="WhatsApp Image 2026-08-25 at 00 45 29" src="https://github.com/user-attachments/assets/49ed6802-0440-46f9-9aba-39b09cebed42" /> <br>
+<img width="4032" height="1500" alt="WhatsApp Image 2026-08-25 at 00 45 29" src="https://github.com/user-attachments/assets/49ed6802-0440-46f9-9aba-39b09cebed42" /> <br>
 
 
 | Name           | Profile                                | Role        |
@@ -61,12 +74,16 @@ The challenge requires students to construct an autonomous robot which will unde
 
 ### Challenge 2
 [Obstacle Round Video 1 - Practice before Nationals on Youtube](https://youtu.be/hUuTf3fS2V0?si=C6_U4KdSrS-R3kdz) <br>
+<<<<<<< Updated upstream
 [Obstacle Round Video 2 - Practice before Nationals on Youtube](https://youtu.be/6QX_Y3WPMX4?si=ZPCf-lAfKMT5tgFE) <br>
 [Obstacle Round Video 3 - Practice before APAC on Youtube](https://youtu.be/BjEGykfpRfE)
 
 
 ## Matlab Video
 [Youtube Video: Explanation On How We Used Matlab](https://youtu.be/cSldkeClAug?si=Nf5bUmlcxWWf90j0)
+=======
+[Obstacle Round Video 2 - Practice before Internationals on Youtube](https://youtu.be/6QX_Y3WPMX4?si=ZPCf-lAfKMT5tgFE)
+>>>>>>> Stashed changes
 
 ## List of Components
 
