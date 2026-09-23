@@ -115,12 +115,12 @@ The robot uses a rear-wheel-drive system consisting of one 12V 600 RPM DC encode
 
 ### Robot Dimensions
 
-- **Dimensions:** **50 cm × 29.5 cm × 22 cm**  
+- **Dimensions:** **22 cm × 11 cm × 29 cm**  
 **Length × Width × Height**
 
 **Why We Chose These Dimensions:**
 
-We chose the dimensions of **50 cm × 29.5 cm × 22 cm** to provide a balance between **stability, manoeuvrability, and component placement**. The 50 cm length provides enough space to accommodate the drivetrain, battery, electronics, and sensors while maintaining a compact overall design. The 29.5 cm width provides sufficient stability during movement and turning without making the robot unnecessarily wide. The 22 cm height keeps the robot's centre of mass relatively low while providing enough clearance for mounting the camera, LiDAR, and other electronic components. These dimensions also allow the robot to remain compact enough for efficient navigation around the track.
+We chose the dimensions of **22 cm × 11 cm × 29 cm** to provide a balance between **stability, manoeuvrability, and component placement**. The 50 cm length provides enough space to accommodate the drivetrain, battery, electronics, and sensors while maintaining a compact overall design. The 29.5 cm width provides sufficient stability during movement and turning without making the robot unnecessarily wide. The 22 cm height keeps the robot's centre of mass relatively low while providing enough clearance for mounting the camera, LiDAR, and other electronic components. These dimensions also allow the robot to remain compact enough for efficient navigation around the track.
 
 - **Custom Mounts**: Holders for servo, differential gear, camera, and LiDAR and more. <br> [CAD Designs](mech)
 
