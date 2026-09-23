@@ -49,7 +49,8 @@ Official repository of Team Unsupervised for the World Robot Olympiad Future Eng
     - [Thank You](#thank-you)
 
 ## Team
-<img width="4032" height="2250" alt="WhatsApp Image 2026-08-25 at 00 45 29" src="https://github.com/user-attachments/assets/49ed6802-0440-46f9-9aba-39b09cebed42" /> <br>
+<img width="4032" height="3024" alt="wro" src="https://github.com/user-attachments/assets/e1cb8e2c-2269-49fc-8877-71cf5da5a215" />
+ <br>
 
 
 | Name           | Profile                                | Role        |
